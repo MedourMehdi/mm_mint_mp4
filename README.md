@@ -52,7 +52,7 @@ You should found them here: https://tho-otto.de/crossmint.php or you can read ht
 ## Authors
 
 Medour Mehdi
-[@M.Medour](www.linkedin.com/in/mehdi-medour-2968b3b2)
+[@M.Medour](https://www.linkedin.com/in/mehdi-medour-2968b3b2)
 
 ## Version History
 
