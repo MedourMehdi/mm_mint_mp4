@@ -7,12 +7,12 @@ mm_mint_mp4 is an MP4 video and audio player.
 ![Product Name Screen Shot][product-screenshot]
 
 <div style="text-align: justify">
-mm_mint_mp4 aims to play MP4 h264 video + AAC audio on Freemint in GEM windows.
-It supports 16bpp and 32bpp video format.
-The player try to synchronize video with sound play depending of FPS.
-It resample the original sound frequency to satisfy constraint imposed by Atari hardware.
-The control bar is rebuilt in real time upon the video frame respecting the alpha channel of the png icons, so you can change the icons as your needs by just replacing the files under the icon directory.
-There's no shared library or module needed to make it works.
+mm_mint_mp4 aims to play h264 MP4 video + AAC audio on Freemint in GEM windows.
+It supports 16 bpp and 32 bpp video formats.
+The player tries to synchronize video and sound based on FPS.
+It resamples the original sound frequency to satisfy the constraints imposed by the Atari hardware.
+The control bar is reconstructed in real time on the video image respecting the alpha channel of the png icons, so you can modify the icons according to your needs by simply replacing the files under the icon directory.
+No shared libraries or modules are needed for this to work.
 </div>
 
 ## Getting Started
