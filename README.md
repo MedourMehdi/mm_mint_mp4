@@ -44,10 +44,10 @@ You should found them here: https://tho-otto.de/crossmint.php or you can read ht
 
 ## Help
 
-Notice that the ico folder must be present in the bin directory.
-Due to the lack of performance on Atari Hardware the player works as today only on Aranym JIT emulator.
-For Falcon: I think that 56k DSP integration must be done in fdk-aac and Openh264
-For V4SA: Modifications to support 080 HyperThreading and SIMD instructions set
+* Notice that the ico folder must be present in the bin directory.
+* Due to the lack of performance on Atari Hardware the player works as today only on Aranym JIT emulator:
+** For Falcon: I think that 56k DSP integration must be done in fdk-aac and Openh264
+** For V4SA: Modifications to support 080 HyperThreading and SIMD instructions set
 
 ## Authors
 
