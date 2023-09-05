@@ -5,6 +5,7 @@ mm_mint_mp4 is an MP4 video and audio player.
 ## Description
 
 ![Product Name Screen Shot][product-screenshot]
+
 <div style="text-align: justify">
 mm_mint_mp4 aims to play MP4 h264 video + AAC audio on Freemint in GEM windows.
 It supports 16bpp and 32bpp video format.
@@ -45,10 +46,8 @@ You should found them here: https://tho-otto.de/crossmint.php or you can read ht
 
 Notice that the ico folder must be present in the bin directory.
 Due to the lack of performance on Atari Hardware the player works as today only on Aranym JIT emulator.
-For Falcon:
-- I think that 56k DSP integration must be done in fdk-aac and Openh264
-For V4SA:
-- Modifications to support 080 HyperThreading and SIMD instructions set
+For Falcon: I think that 56k DSP integration must be done in fdk-aac and Openh264
+For V4SA: Modifications to support 080 HyperThreading and SIMD instructions set
 
 ## Authors
 
