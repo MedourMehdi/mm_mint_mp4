@@ -34,7 +34,7 @@ You should found them here: https://tho-otto.de/crossmint.php or you can read ht
 
 ### Installing
 
-* make commande will produce bin/mm_mint_mp4.prg.
+* "make" command will produce a binary for 020-060 cpu in bin/mm_mint_mp4.prg.
 * This repository contains samples icon files but you should replace them with yours (32bpp / 32px).
 
 ### Executing program
