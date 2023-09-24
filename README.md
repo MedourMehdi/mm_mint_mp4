@@ -66,7 +66,7 @@ This project is licensed under the GNU GENERAL PUBLIC LICENSE License - see the 
 ## Acknowledgments
 
 Inspiration, code snippets, etc.
-* [AtariForum](https://github.com/matiassingers/awesome-readme)
+* [AtariForum](https://www.atari-forum.com/viewtopic.php?t=42086&start=175)
 * [T.Otto](https://tho-otto.de/crossmint.php)
 * [Myaes](http://myaes.lutece.net/)
 * [FreeMint](https://freemint.github.io/)
