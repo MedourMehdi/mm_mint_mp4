@@ -1309,13 +1309,13 @@ void mm_mint_mp4_Open(){
 
 		if(mm_mint_mp4_snd.real_time_resampling == true) {
 			mm_mint_mp4_snd.resampling_ratio = (double)mm_mint_mp4_snd.new_samplerate / mm_mint_mp4_snd.ori_samplerate;
-			VR = (VResampler *)malloc(sizeof(VResampler));
-			if (VR->setup(mm_mint_mp4_snd.resampling_ratio, this_channels, FILTSIZE)) {
+			VR = (VResampler *)Mxalloc(sizeof(VResampler), 3);
+			if (VR->setup(mm_mint_mp4_snd.resampling_ratio, (unsigned int)this_channels, (unsigned int)FILTSIZE)) {
 				fprintf (stderr, "Sample rate ratio %d/%d is not supported.\n", mm_mint_mp4_snd.new_samplerate, mm_mint_mp4_snd.ori_samplerate);
 			} else {
 				printf("***\tResample ratio %f\n", mm_mint_mp4_snd.resampling_ratio);
 				printf("***\tOriginal sound samplerate %d -> Destination sound samplerate %d\t***\n***\tFilter HLEN used %d\t***\n", mm_mint_mp4_snd.ori_samplerate, mm_mint_mp4_snd.new_samplerate, FILTSIZE);
-			}	
+			}
 		}
 
 		mm_mint_mp4_snd.track_channels = this_channels;
@@ -1406,7 +1406,6 @@ void mm_mint_mp4_Open(){
 			open_window( VIDEO_WIDTH, VIDEO_HEIGHT, basename(mm_mint_mp4_snd.filename) );	
 			mm_ico_Update_x(2, wwork - mm_ico_padding_right, -1);
 		}
-		
 	} else {
 		int16_t width = 320;
 		int16_t height = 50;
@@ -1450,12 +1449,12 @@ void mm_mint_mp4_Snd_MP4_Decode( int8_t *pBuffer, uint32_t bufferSize ){
 		while( done < bufferSize && mm_mint_mp4_snd.frames_counter < mm_mint_mp4_snd.total_frames && app_end != true) {
 
 			uint32_t packet_size = mm_mint_mp4_snd.track_max_frame_size;
-			uint8_t	pData[packet_size], *ptr = pData;
+			uint8_t*	pData = (uint8_t*)malloc(packet_size);
 
-			MP4ReadSample(p_mp4_handle, mm_mint_mp4_snd.track_number, mm_mint_mp4_snd.frames_counter, (uint8_t **) &ptr, &packet_size, NULL, NULL, NULL, NULL);
+			MP4ReadSample(p_mp4_handle, mm_mint_mp4_snd.track_number, mm_mint_mp4_snd.frames_counter, (uint8_t **) &pData, &packet_size, NULL, NULL, NULL, NULL);
 
 			NeAACDecFrameInfo snd_info;
-			pDec_data = (INT_PCM*)NeAACDecDecode(*p_snd_handle, &snd_info , ptr, packet_size );
+			pDec_data = (INT_PCM*)NeAACDecDecode(*p_snd_handle, &snd_info, pData, packet_size );
 			if(snd_info.error > 0){
 				printf("[FAAD] Error decoding %s\n", faacDecGetErrorMessage(snd_info.error) );
 			}
@@ -1504,6 +1503,8 @@ void mm_mint_mp4_Snd_MP4_Decode( int8_t *pBuffer, uint32_t bufferSize ){
 			done += frame_size * sizeof(INT_PCM);
 			frame_counter += 1;
 			mm_mint_mp4_snd.frames_counter++;
+
+			free(pData);
 		}
 	} else {
 		memset( pBuffer, 0, bufferSize);
@@ -1817,7 +1818,7 @@ void mm_mint_mp4_Close(){
 		mm_mint_mp4_snd.bytes_counter = 0;
 		if(mm_mint_mp4_snd.real_time_resampling == true){
 			VR->clear();
-			free(VR);
+			Mfree(VR);
 		}
 		free(mm_mint_mp4_snd.pBuffer);
 	}
