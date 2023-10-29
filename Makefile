@@ -15,7 +15,9 @@ OBJ := $(SRC:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 
 CXXFLAGS := -I./ 
 
+# CFLAGS   :=  -fomit-frame-pointer -fno-strict-aliasing -O2 -ffast-math
 CFLAGS   := -m68020-60 -fomit-frame-pointer -fno-strict-aliasing -O2 -ffast-math
+# CFLAGS   :=  -mcfv4e -fomit-frame-pointer -fno-strict-aliasing -O2 -ffast-math
 
 CFLAGS += -Wl,--stack,10485760
 

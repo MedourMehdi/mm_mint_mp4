@@ -66,7 +66,7 @@
 #define VIDEO_WIDTH 320
 #define VIDEO_HEIGHT 240
 
-#define PREFER_25KH /* Seems to bug with FAAD - Needs to be debugged - One day may be... */
+#define PREFER_25KH
 
 #define BYTES_TO_CHECK	8
 
@@ -1861,7 +1861,8 @@ void* mm_mint_mp4_Snd_Play(void* p_param ){
 			} else {
 				/* This show how much frames was played before sound restart */
 				// printf("mm_mint_mp4_snd.frames_counter %d - mm_mint_mp4_snd.total_frames %d\n",mm_mint_mp4_snd.frames_counter ,mm_mint_mp4_snd.total_frames);
-				mm_mint_mp4_Snd_Restart();
+				// mm_mint_mp4_Snd_Restart();
+				mm_mint_mp4_Snd_Pause();
 				pthread_yield_np();
 			}
 		}
