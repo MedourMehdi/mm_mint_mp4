@@ -30,12 +30,13 @@
 #include <pthread.h>
 
 #include <wels/codec_api.h> /* OpenH264 - video decoding */
-#include <fdk-aac/aacdecoder_lib.h> /* AAC audio decoding */
+// #include <fdk-aac/aacdecoder_lib.h> /* AAC audio decoding */
+#include <neaacdec.h>
 #include <mp4v2/mp4v2.h> /* MP4 container parsing */
 /* 	
 *		Autoscaling part: due to lake of performance on actual Atari platforms :
 *		-	mm_mint_mp4_vid.limit_upscale = true
-*		-	SIZER removed from WI_KIND definition 
+*		-	SIZER removed from wi_kind variable (see open_win function) 
 */
 #include <libyuv.h>
 
@@ -55,15 +56,17 @@
 
 #define LIMIT_UPSCALE	1
 
-// #define WI_KIND		(MOVER|FULLER|SIZER|CLOSER|NAME)
-// #define WI_KIND		(MOVER|FULLER|CLOSER|NAME)
-
 #define MIN_WIDTH  (2*gl_wbox)
 #define MIN_HEIGHT (3*gl_hbox)
 
 #define MIN(a,b) (a<=b?a:b)
 #define MAX(a,b) (a>=b?a:b)
 #define RESPECT_VIDEO_RATIO	TRUE
+
+#define VIDEO_WIDTH 320
+#define VIDEO_HEIGHT 240
+
+// #define PREFER_25KH /* Seems to bug with FAAD - Needs to be debugged - One day may be... */
 
 #define BYTES_TO_CHECK	8
 
@@ -160,6 +163,8 @@ static	SBufferInfo		pDstBufInfo;
 /****************************************************************/
 /*  SOUND		                                        */
 /****************************************************************/
+typedef signed short SHORT;
+typedef SHORT INT_PCM;
 
 int16_t attenuation_left, attenuation_right;
 int16_t loadNewSample;
@@ -180,6 +185,7 @@ typedef struct struct_mm_snd {
 	int32_t		atari_effective_sampleRate;
 	double		resampling_ratio;
 	double		track_total_duration;
+	int32_t		track_channels;
 	int32_t		track_sampleRate;
 	int32_t		track_duration;
 	int16_t		track_number;
@@ -200,7 +206,7 @@ typedef struct struct_mm_snd {
 } struct_mm_snd;
 
 struct_mm_snd  mm_mint_mp4_snd;
-
+faacDecConfigurationPtr config;
 /****************************************************************/
 /*  RESAMPLING		                                */
 /****************************************************************/
@@ -307,8 +313,6 @@ struct_mm_ico_list control_bar_list[] = {
 };
 
 int16_t mm_ico_padding_right = 72;
-
-
 
 /****************************************************************/
 /*  AES & MISC UTILITY DECLARATIONS                             */
@@ -495,14 +499,6 @@ void *multi( void *p_param )
 				if(mm_mint_mp4_vid.is_playing == false){
 					st_Win_Redraw(NULL);
 				}
-			// if(mm_mint_mp4_vid.track_number > 0){
-			// 	if(mm_mint_mp4_vid.is_playing == false){
-			// 		st_Win_Redraw(NULL);
-			// 	}
-			// }
-			// else {
-			// 	st_Win_Redraw(NULL);
-			// }
 				break;
 			case WM_NEWTOP:
 				break;
@@ -571,10 +567,7 @@ void *multi( void *p_param )
 				mm_ico_pxy_control_bar[3] = ywork + hwork;
 				mm_ico_pxy_control_bar[1] = mm_ico_pxy_control_bar[3] - mm_ico_win_delta_y;
 			}
-			// if( mb > 0 )
-			// 	printf("mb = %d\n", mb);
 			if( mb == 1 ){
-				// printf("mx %d my %d\n", mx, my);
 				if(mm_ico_win_delta_y > 0 && xwork < mx < wwork && ywork < my < hwork )
 				{
 					mm_ico_Handle(mx, my, mb);
@@ -592,7 +585,6 @@ void *multi( void *p_param )
 
 void mm_ico_Update_x(uint16_t index, int16_t new_pos_x, int16_t new_pos_y){
 		control_bar_list[ index ].pos_x = new_pos_x < 0 ? control_bar_list[ index ].pos_x : new_pos_x;
-		// control_bar_list[ index ].pos_y = new_pos_y;
 		control_bar_list[ index ].pos_y = new_pos_y < 0 ? control_bar_list[ index ].pos_y : new_pos_y;
 		control_bar_list[ index ].main_icon->x = control_bar_list[ index ].pos_x;
 		control_bar_list[ index ].main_icon->y = control_bar_list[ index ].pos_y;
@@ -873,10 +865,13 @@ int main(int argc, char *argv[])
 	int  iret_video, iret_sound, iret_eventloop;
     FILE* p_file;
     
-	if (argc > 1)
+	if (argc > 1){
 		mm_mint_mp4_snd.filename = argv[1];
-	else
-		mm_mint_mp4_snd.filename = "sample.mp4";
+	}
+	else{
+		form_alert(1, "[1][Provide a file as argument][Okay]");
+		return 1;
+	}
 
 	const char *file_extension = get_filename_ext(mm_mint_mp4_snd.filename);
 	if (!check_ext(file_extension, "MP4") && !check_ext(file_extension, "M4A")){
@@ -906,23 +901,21 @@ int main(int argc, char *argv[])
 	mm_ico_Init();
 
 	mm_mint_mp4_Snd_Init();
-	/*
-	*	Keep video first then audio
-	*/ 
-
 
 	if(mm_mint_mp4_snd.track_number > 0 && !app_end) {
 		mm_mint_mp4_Snd_Set();
 	}
 
+	/*
+	*	Keep video first then audio
+	*/ 
+
 	if(mm_mint_mp4_vid.track_number > 0) {
 		iret_video = pthread_create( &thread_video, NULL, &mm_mint_mp4_Vid_Play, NULL);
-		// printf("mm_mint_mp4_Vid_Play();\n");
 	}
 
 	if(mm_mint_mp4_snd.track_number > 0) {
 		iret_sound = pthread_create( &thread_sound, NULL, &mm_mint_mp4_Snd_Play, NULL);
-		// printf("mm_mint_mp4_Snd_Play();\n");
 	}
 
 	pthread_join( thread_eventloop, NULL);
@@ -1056,7 +1049,6 @@ void mm_mint_mp4_Snd_Pause(){
 		mm_mint_mp4_vid.is_paused = mm_mint_mp4_snd.is_paused == true ? true : false;
 		mm_mint_mp4_vid.is_playing = mm_mint_mp4_vid.is_paused == true ? false : true;
 	}
-	// printf("mm_mint_mp4_Snd_Pause %d\n", mm_mint_mp4_snd.is_paused);
 	if( mm_mint_mp4_snd.is_paused == true ) {
 		memset( mm_mint_mp4_snd.pPhysical, 0, mm_mint_mp4_snd.bufferSize );
 		memset( mm_mint_mp4_snd.pLogical, 0, mm_mint_mp4_snd.bufferSize );
@@ -1080,7 +1072,6 @@ void mm_mint_mp4_Snd_Mute(){
 	if( mm_mint_mp4_snd.is_muted == true && mm_mint_mp4_snd.is_playing == true )
 	{
 		memset( mm_mint_mp4_snd.pPhysical, 0, mm_mint_mp4_snd.bufferSize );
-		// memset( mm_mint_mp4_snd.pLogical, 0, mm_mint_mp4_snd.bufferSize );
 	}
 }
 
@@ -1127,8 +1118,11 @@ void mm_mint_mp4_Init(){
 	mm_mint_mp4_vid.mm_mint_mp4_Vid_Feed = mm_mint_mp4_Vid_MP4_Decode;
 	mm_mint_mp4_vid.mm_mint_mp4_Vid_Close = mm_mint_mp4_Close;
 
+#ifdef PREFER_25KH
+	/* If we prefer downscaling instead upscaling */
 	mm_mint_mp4_snd.resampling_25kh = true;
 	mm_mint_mp4_snd.resampling_48kh = false;
+#endif
 
 	mm_mint_mp4_snd.track_number = 0;
 	mm_mint_mp4_vid.track_number = 0;
@@ -1204,13 +1198,12 @@ void mm_mint_mp4_Open(){
 		mm_mint_mp4_snd.is_playing = true;
 
 		printf("***\tAudio Track ID %d\t***\n", mm_mint_mp4_snd.track_number);
-		UINT	confBytes = 128;
-    	uint8_t	conf[confBytes];
 
-		AAC_DECODER_ERROR   snd_err;
-		mm_mint_mp4_snd.pSndCodec_Handler = (HANDLE_AACDECODER*)malloc(sizeof(HANDLE_AACDECODER));
-		HANDLE_AACDECODER	*p_snd_handle = (HANDLE_AACDECODER*)mm_mint_mp4_snd.pSndCodec_Handler;
-		*p_snd_handle = aacDecoder_Open(TT_MP4_RAW, 1);
+		mm_mint_mp4_snd.pSndCodec_Handler = (NeAACDecHandle *)malloc(sizeof(NeAACDecHandle));
+		NeAACDecHandle*	p_snd_handle = (NeAACDecHandle *)mm_mint_mp4_snd.pSndCodec_Handler;
+		*p_snd_handle = faacDecOpen();
+
+
 
 		mm_mint_mp4_snd.total_frames = MP4GetTrackNumberOfSamples(p_mp4_handle, mm_mint_mp4_snd.track_number);
 		mm_mint_mp4_snd.track_max_frame_size = MP4GetTrackMaxSampleSize(p_mp4_handle, mm_mint_mp4_snd.track_number);
@@ -1294,25 +1287,38 @@ void mm_mint_mp4_Open(){
 			break;
 		}
 
+		config = faacDecGetCurrentConfiguration(*p_snd_handle);
+		config->defObjectType = LC;
+		config->outputFormat = FAAD_FMT_16BIT;
+		faacDecSetConfiguration(*p_snd_handle, config);
+
+		unsigned char *escfg;
+		unsigned int escfglen;
+		unsigned long this_samplerate;
+		unsigned char this_channels;
+
+		MP4GetTrackESConfiguration(p_mp4_handle, mm_mint_mp4_snd.track_number, &escfg, &escfglen);
+		if (!escfg) {
+			printf("---\tNo audio format information found\n");
+		}
+		if (faacDecInit(*p_snd_handle, escfg, escfglen, &this_samplerate, &this_channels) < 0) {
+			printf("---\tCould not initialise FAAD\n");
+		}
+		printf("***\tFaad samplerate %lu\n", this_samplerate);
+		printf("***\tFaad channels %d\n", this_channels);
+
 		if(mm_mint_mp4_snd.real_time_resampling == true) {
 			mm_mint_mp4_snd.resampling_ratio = (double)mm_mint_mp4_snd.new_samplerate / mm_mint_mp4_snd.ori_samplerate;
 			VR = (VResampler *)malloc(sizeof(VResampler));
-			if (VR->setup(mm_mint_mp4_snd.resampling_ratio, 2, FILTSIZE)) {
+			if (VR->setup(mm_mint_mp4_snd.resampling_ratio, this_channels, FILTSIZE)) {
 				fprintf (stderr, "Sample rate ratio %d/%d is not supported.\n", mm_mint_mp4_snd.new_samplerate, mm_mint_mp4_snd.ori_samplerate);
 			} else {
+				printf("***\tResample ratio %f\n", mm_mint_mp4_snd.resampling_ratio);
 				printf("***\tOriginal sound samplerate %d -> Destination sound samplerate %d\t***\n***\tFilter HLEN used %d\t***\n", mm_mint_mp4_snd.ori_samplerate, mm_mint_mp4_snd.new_samplerate, FILTSIZE);
 			}	
 		}
 
-		MP4GetTrackESConfiguration(p_mp4_handle, mm_mint_mp4_snd.track_number, (uint8_t **)&conf, (uint32_t *)&confBytes);
-		snd_err = aacDecoder_ConfigRaw(*p_snd_handle, (uint8_t **)&conf, (uint32_t *)&confBytes);
-
-		if ((snd_err = aacDecoder_SetParam(*p_snd_handle, AAC_PCM_MIN_OUTPUT_CHANNELS, 2)) != AAC_DEC_OK) {
-			printf("Error - Couldn't set min output channels: %d", snd_err);
-		}
-		if ((snd_err = aacDecoder_SetParam(*p_snd_handle, AAC_PCM_MAX_OUTPUT_CHANNELS, 2)) != AAC_DEC_OK) {
-			printf("Errot - Couldn't set max output channels: %d", snd_err);
-		}
+		mm_mint_mp4_snd.track_channels = this_channels;
 
 		mm_mint_mp4_snd.bytes_counter = 0;
 		mm_mint_mp4_snd.frames_counter = 1;
@@ -1321,8 +1327,8 @@ void mm_mint_mp4_Open(){
 	if(mm_mint_mp4_vid.track_number > 0) {
 		mm_mint_mp4_vid.is_playing = true;
 		printf("***\tVideo Track ID %d\t***\n", mm_mint_mp4_vid.track_number);
-		// mm_mint_mp4_vid.trace_level = WELS_LOG_WARNING;
-		mm_mint_mp4_vid.trace_level = WELS_LOG_INFO;
+		mm_mint_mp4_vid.trace_level = WELS_LOG_ERROR;
+		// mm_mint_mp4_vid.trace_level = WELS_LOG_INFO;
 
 		if (WelsCreateDecoder(&pVidCodec_Handler)) { printf("Create Decoder failed\n"); }
 		if (!pVidCodec_Handler) { printf("Create Decoder failed (no handle)\n"); }
@@ -1353,8 +1359,6 @@ void mm_mint_mp4_Open(){
 
 		// if no audio mp4v2 seems to crash here
 		mm_mint_mp4_vid.video_sample_max_size = MP4GetTrackMaxSampleSize(p_mp4_handle, mm_mint_mp4_vid.track_number) << 1;
-		// MP4GetSampleDuration
-		// MP4GetSampleIdFromEditTime()
 
 		mm_mint_mp4_vid.video_sample = (uint8_t*)malloc(mm_mint_mp4_vid.video_sample_max_size);
 
@@ -1399,9 +1403,10 @@ void mm_mint_mp4_Open(){
 			mm_ico_Update_x(2, wwork - mm_ico_padding_right, -1);
 		} else {
 			/* 240p default = 320×240 */
-			open_window( 320, 240, basename(mm_mint_mp4_snd.filename) );
+			open_window( VIDEO_WIDTH, VIDEO_HEIGHT, basename(mm_mint_mp4_snd.filename) );	
 			mm_ico_Update_x(2, wwork - mm_ico_padding_right, -1);
 		}
+		
 	} else {
 		int16_t width = 320;
 		int16_t height = 50;
@@ -1433,43 +1438,32 @@ void mm_mint_mp4_Open(){
 
 void mm_mint_mp4_Snd_MP4_Decode( int8_t *pBuffer, uint32_t bufferSize ){
 
-    int16_t		i, j, frame_size = 0;
-	
-    uint32_t	frame_counter = 0, bytes_count = 0, done = 0;
-    UINT		bytes_valid, packet_size;
-    uint16_t 	dec_size = 8 * 2048 * sizeof(INT_PCM);
-    INT_PCM		*pDec_data = NULL;
+    int16_t		frame_size = 0;
 
-    AAC_DECODER_ERROR   snd_err;
-	HANDLE_AACDECODER*  p_snd_handle = (HANDLE_AACDECODER*)mm_mint_mp4_snd.pSndCodec_Handler;
+    uint32_t	frame_counter = 0, done = 0;
+    INT_PCM*	pDec_data = NULL;
+
+	NeAACDecHandle*  	p_snd_handle = (NeAACDecHandle*)mm_mint_mp4_snd.pSndCodec_Handler;
     MP4FileHandle*      p_mp4_handle = (MP4FileHandle*)mm_mint_mp4_snd.pMP4_Handler;
-
-	pDec_data = (INT_PCM*)malloc(dec_size);
-	if( pDec_data == NULL){
-		fprintf(stderr, "ERROR: AAC - pDec_data malloc");
-	}
 
 	if(mm_mint_mp4_snd.is_paused != true){
 		while( done < bufferSize && mm_mint_mp4_snd.frames_counter < mm_mint_mp4_snd.total_frames && app_end != true) {
-			packet_size = mm_mint_mp4_snd.track_max_frame_size;
+
+			uint32_t packet_size = mm_mint_mp4_snd.track_max_frame_size;
 			uint8_t	pData[packet_size], *ptr = pData;
 
 			MP4ReadSample(p_mp4_handle, mm_mint_mp4_snd.track_number, mm_mint_mp4_snd.frames_counter, (uint8_t **) &ptr, &packet_size, NULL, NULL, NULL, NULL);
 
-			bytes_valid = packet_size;
-
-			snd_err = aacDecoder_Fill(*p_snd_handle, &ptr, &packet_size, &bytes_valid);
-			if (snd_err != AAC_DEC_OK) {
-				fprintf(stderr, "AAC_DEC_NOK Fill failed: %x\n", snd_err);
+			NeAACDecFrameInfo snd_info;
+			pDec_data = (INT_PCM*)NeAACDecDecode(*p_snd_handle, &snd_info , ptr, packet_size );
+			if(snd_info.error > 0){
+				printf("[FAAD] Error decoding %s\n", faacDecGetErrorMessage(snd_info.error) );
 			}
-			snd_err = aacDecoder_DecodeFrame(*p_snd_handle, (INT_PCM *)pDec_data, dec_size / sizeof(INT_PCM), 0);
-			if (snd_err == AAC_DEC_NOT_ENOUGH_BITS){
-				fprintf(stderr, "AAC_DEC_NOT_ENOUGH_BITS : %x\n", snd_err);
+			if (!snd_info.samples || !pDec_data || !snd_info.bytesconsumed) {
+				printf("[FAAD] empty/non complete samples #%lu bytesconsumed #%lu\n", snd_info.samples, snd_info.bytesconsumed);
 			}
 
-			CStreamInfo	*snd_info = aacDecoder_GetStreamInfo(*p_snd_handle);
-
-			frame_size = snd_info->frameSize * snd_info->numChannels;
+			frame_size = snd_info.samples;
 
 			if( mm_mint_mp4_snd.real_time_resampling == true ){
 
@@ -1477,10 +1471,10 @@ void mm_mint_mp4_Snd_MP4_Decode( int8_t *pBuffer, uint32_t bufferSize ){
 				float	downscale_buff_out[frame_size * (uint32_t)mm_mint_mp4_snd.resampling_ratio];
 				INT_PCM	downscale_buff_pcm[frame_size * (uint32_t)mm_mint_mp4_snd.resampling_ratio];
 
-				uint32_t	snd_in_size = snd_info->frameSize;
+				uint32_t	snd_in_size = frame_size;
 				uint32_t	snd_out_size = lrint((snd_in_size >> 1) * mm_mint_mp4_snd.resampling_ratio) << 1;
 
-				mm_mint_mp4_Snd_PCM16_to_Float(downscale_buff_in, pDec_data, frame_size);
+				mm_mint_mp4_Snd_PCM16_to_Float(downscale_buff_in, (INT_PCM*)pDec_data, frame_size);
 
 				VR->inp_data = downscale_buff_in;
 				VR->out_data = downscale_buff_out;
@@ -1498,13 +1492,10 @@ void mm_mint_mp4_Snd_MP4_Decode( int8_t *pBuffer, uint32_t bufferSize ){
 				}
 			} else {
 				if(mm_mint_mp4_snd.is_muted != true){
-					uint8_t *tmp_ptr = (uint8_t*)&pBuffer[done];
-
+					u_int16_t* this_ptr = (u_int16_t*)&pBuffer[done];
 					for (int16_t i = 0; i < frame_size; i++) {
-						uint8_t* out = &tmp_ptr[sizeof(INT_PCM) * i];
-						out[0] = (uint8_t)( ((pDec_data[i] ) >> 8) );
-						out[1] = (uint8_t)( pDec_data[i] );
-					}
+						*this_ptr++ = (( ((INT_PCM*)pDec_data)[i] ) &0xFF00) | ((INT_PCM*)pDec_data)[i] & 0x00FF;
+					}					
 				} else {
 					memset( &pBuffer[done], 0, frame_size * sizeof(INT_PCM) );
 				}
@@ -1642,7 +1633,7 @@ void mm_mint_mp4_Vid_MP4_Decode(){
 			}
 			memset(pDestData, 0, pDestData_size);
 			memset(st_modified_buffer, 0, st_modified_buffer_size);
-			if( mm_mint_mp4_vid.limit_upscale == true &&	(wwork >= mm_mint_mp4_vid.track_width || hwork >= mm_mint_mp4_vid.track_height) )
+			if( mm_mint_mp4_vid.limit_upscale == true && (wwork >= mm_mint_mp4_vid.track_width || hwork >= mm_mint_mp4_vid.track_height) )
 			{
 				switch (work_out_extended[4]){
 					case 32:
@@ -1742,7 +1733,8 @@ void mm_mint_mp4_Vid_MP4_Decode(){
 
 			if(mm_mint_mp4_snd.track_number > 0) {
 				if(frame_to_play > mm_mint_mp4_vid.frames_counter + fps_max_delta){
-					printf("Frame to play %lu vs Frame playing %lu\n",frame_to_play, mm_mint_mp4_vid.frames_counter);
+					/* This printf the desync with sound playing */
+					// printf("Frame to play %lu vs Frame playing %lu\n",frame_to_play, mm_mint_mp4_vid.frames_counter);
 					bool is_sync_frame = false;
 					while(!is_sync_frame && frame_to_play > mm_mint_mp4_vid.frames_counter + 5){
 						if(MP4GetSampleSync(p_mp4_handle, mm_mint_mp4_vid.track_number, mm_mint_mp4_vid.frames_counter + 1)){
@@ -1820,8 +1812,8 @@ void mm_mint_mp4_Vid_MP4_Decode(){
 
 void mm_mint_mp4_Close(){
 	if(mm_mint_mp4_snd.track_number > 0) {
-		HANDLE_AACDECODER*  p_snd_handle = (HANDLE_AACDECODER*)mm_mint_mp4_snd.pSndCodec_Handler;
-		aacDecoder_Close(*p_snd_handle);
+		NeAACDecHandle*  p_snd_handle = (NeAACDecHandle*)mm_mint_mp4_snd.pSndCodec_Handler;
+		faacDecClose(*p_snd_handle);
 		mm_mint_mp4_snd.bytes_counter = 0;
 		if(mm_mint_mp4_snd.real_time_resampling == true){
 			VR->clear();
@@ -1867,6 +1859,7 @@ void* mm_mint_mp4_Snd_Play(void* p_param ){
 				mm_mint_mp4_Snd_Feed();
 				pthread_yield_np();
 			} else {
+				/* This show how much frames was played before sound restart */
 				// printf("mm_mint_mp4_snd.frames_counter %d - mm_mint_mp4_snd.total_frames %d\n",mm_mint_mp4_snd.frames_counter ,mm_mint_mp4_snd.total_frames);
 				mm_mint_mp4_Snd_Restart();
 				pthread_yield_np();
@@ -1897,10 +1890,8 @@ bool check_ext(const char *ext1, const char *ext2){
 		stringtoupper((char *)ext2);
 	}
 	if(strcmp(ext1, ext2) == 0){
-		// printf("Match TRUE %s %s", ext1, ext2);
 		return TRUE;
 	} else {
-		// printf("Match FALSE %s %s", ext1, ext2);
 		return FALSE;
 	}
 }
@@ -1932,4 +1923,3 @@ const char *get_filename_ext(const char *filename){
     if(!dot || dot == filename) return "";
     return dot + 1;
 }
-
