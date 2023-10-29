@@ -66,7 +66,7 @@
 #define VIDEO_WIDTH 320
 #define VIDEO_HEIGHT 240
 
-// #define PREFER_25KH /* Seems to bug with FAAD - Needs to be debugged - One day may be... */
+#define PREFER_25KH /* Seems to bug with FAAD - Needs to be debugged - One day may be... */
 
 #define BYTES_TO_CHECK	8
 
@@ -1471,7 +1471,7 @@ void mm_mint_mp4_Snd_MP4_Decode( int8_t *pBuffer, uint32_t bufferSize ){
 				float	downscale_buff_out[frame_size * (uint32_t)mm_mint_mp4_snd.resampling_ratio];
 				INT_PCM	downscale_buff_pcm[frame_size * (uint32_t)mm_mint_mp4_snd.resampling_ratio];
 
-				uint32_t	snd_in_size = frame_size;
+				uint32_t	snd_in_size = snd_info.samples >> 1;
 				uint32_t	snd_out_size = lrint((snd_in_size >> 1) * mm_mint_mp4_snd.resampling_ratio) << 1;
 
 				mm_mint_mp4_Snd_PCM16_to_Float(downscale_buff_in, (INT_PCM*)pDec_data, frame_size);
