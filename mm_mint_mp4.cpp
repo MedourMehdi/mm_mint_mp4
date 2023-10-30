@@ -213,7 +213,7 @@ typedef struct struct_mm_snd {
 struct_mm_snd  mm_mint_mp4_snd;
 faacDecConfigurationPtr config;
 
-uint8_t* pData = NULL;
+// uint8_t* pSndData = NULL;
 /****************************************************************/
 /*  RESAMPLING		                                */
 /****************************************************************/
@@ -1529,20 +1529,21 @@ void mm_mint_mp4_Snd_MP4_Decode( int8_t *pBuffer, uint32_t bufferSize ){
 	NeAACDecHandle*  	p_snd_handle = (NeAACDecHandle*)mm_mint_mp4_snd.pSndCodec_Handler;
     MP4FileHandle*      p_mp4_handle = (MP4FileHandle*)mm_mint_mp4_snd.pMP4_Handler;
 
-	if(pData == NULL){
-		pData = (uint8_t*)st_mem_alloc(mm_mint_mp4_snd.track_max_frame_size);
-	}
+	// if(pSndData == NULL){
+	// 	pSndData = (uint8_t*)st_mem_alloc(mm_mint_mp4_snd.track_max_frame_size);
+	// }
 
+	uint8_t* pSndData = (uint8_t*)st_mem_alloc(mm_mint_mp4_snd.track_max_frame_size);
 
 	if(mm_mint_mp4_snd.is_paused != true){
 		while( done < bufferSize && mm_mint_mp4_snd.frames_counter < mm_mint_mp4_snd.total_frames && app_end != true) {
 
 			uint32_t packet_size = mm_mint_mp4_snd.track_max_frame_size;
 
-			MP4ReadSample(p_mp4_handle, mm_mint_mp4_snd.track_number, mm_mint_mp4_snd.frames_counter, (uint8_t **) &pData, &packet_size, NULL, NULL, NULL, NULL);
+			MP4ReadSample(p_mp4_handle, mm_mint_mp4_snd.track_number, mm_mint_mp4_snd.frames_counter, (uint8_t **) &pSndData, &packet_size, NULL, NULL, NULL, NULL);
 
 			NeAACDecFrameInfo snd_info;
-			pDec_data = (INT_PCM*)NeAACDecDecode(*p_snd_handle, &snd_info, pData, packet_size );
+			pDec_data = (INT_PCM*)NeAACDecDecode(*p_snd_handle, &snd_info, pSndData, packet_size );
 			if(snd_info.error > 0){
 				printf("[FAAD] Error decoding %s\n", faacDecGetErrorMessage(snd_info.error) );
 			}
@@ -1600,6 +1601,7 @@ void mm_mint_mp4_Snd_MP4_Decode( int8_t *pBuffer, uint32_t bufferSize ){
 		free(pDec_data);
 		pDec_data = NULL;
 	}
+	st_mem_free(pSndData);
     mm_mint_mp4_snd.bytes_counter += done;
 }
 
@@ -1935,7 +1937,7 @@ void mm_mint_mp4_Snd_Close(){
 
 		NeAACDecHandle*  p_snd_handle = (NeAACDecHandle*)mm_mint_mp4_snd.pSndCodec_Handler;
 		faacDecClose(*p_snd_handle);
-		st_mem_free(pData);
+		// st_mem_free(pSndData);
 		mm_mint_mp4_snd.bytes_counter = 0;
 		if(mm_mint_mp4_snd.real_time_resampling == true){
 			VR->clear();
