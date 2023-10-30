@@ -940,6 +940,8 @@ int main(int argc, char *argv[])
 	wind_get(0, WF_WORKXYWH, &xdesk, &ydesk, &wdesk, &hdesk);
 	open_vwork();
 	vq_extnd(handle,1,work_out_extended);
+	/* Set Text color to Blue */
+	vst_color(handle, 4);
 
 	graf_mouse(ARROW, NULL);
 
@@ -981,6 +983,9 @@ int main(int argc, char *argv[])
 	}
 
 	mm_mint_mp4_Close();
+
+	/* Reset Text color to Black */
+	vst_color(handle, 1);
 
 	wind_close(wi_handle);
 	wind_delete(wi_handle);
