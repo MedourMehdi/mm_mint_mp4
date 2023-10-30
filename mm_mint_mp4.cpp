@@ -213,7 +213,7 @@ typedef struct struct_mm_snd {
 struct_mm_snd  mm_mint_mp4_snd;
 faacDecConfigurationPtr config;
 
-// uint8_t* pSndData = NULL;
+uint8_t* pSndData = NULL;
 /****************************************************************/
 /*  RESAMPLING		                                */
 /****************************************************************/
@@ -1393,7 +1393,7 @@ void mm_mint_mp4_Open(){
 
 		if(mm_mint_mp4_snd.real_time_resampling == true) {
 			mm_mint_mp4_snd.resampling_ratio = (double)mm_mint_mp4_snd.new_samplerate / mm_mint_mp4_snd.ori_samplerate;
-			VR = (VResampler *)Mxalloc(sizeof(VResampler), 0);
+			VR = (VResampler *)st_mem_alloc(sizeof(VResampler));
 			if (VR->setup(mm_mint_mp4_snd.resampling_ratio, (unsigned int)this_channels, (unsigned int)FILTSIZE)) {
 				fprintf (stderr, "Sample rate ratio %d/%d is not supported.\n", mm_mint_mp4_snd.new_samplerate, mm_mint_mp4_snd.ori_samplerate);
 			} else {
@@ -1529,17 +1529,16 @@ void mm_mint_mp4_Snd_MP4_Decode( int8_t *pBuffer, uint32_t bufferSize ){
 	NeAACDecHandle*  	p_snd_handle = (NeAACDecHandle*)mm_mint_mp4_snd.pSndCodec_Handler;
     MP4FileHandle*      p_mp4_handle = (MP4FileHandle*)mm_mint_mp4_snd.pMP4_Handler;
 
-	// if(pSndData == NULL){
-	// 	pSndData = (uint8_t*)st_mem_alloc(mm_mint_mp4_snd.track_max_frame_size);
-	// }
+	if(pSndData == NULL){
+		pSndData = (uint8_t*)st_mem_alloc(mm_mint_mp4_snd.track_max_frame_size);
+	}
 
-	uint8_t* pSndData = (uint8_t*)st_mem_alloc(mm_mint_mp4_snd.track_max_frame_size);
 
 	if(mm_mint_mp4_snd.is_paused != true){
 		while( done < bufferSize && mm_mint_mp4_snd.frames_counter < mm_mint_mp4_snd.total_frames && app_end != true) {
 
 			uint32_t packet_size = mm_mint_mp4_snd.track_max_frame_size;
-
+			// uint8_t* pSndData = (uint8_t*)st_mem_alloc(mm_mint_mp4_snd.track_max_frame_size);
 			MP4ReadSample(p_mp4_handle, mm_mint_mp4_snd.track_number, mm_mint_mp4_snd.frames_counter, (uint8_t **) &pSndData, &packet_size, NULL, NULL, NULL, NULL);
 
 			NeAACDecFrameInfo snd_info;
@@ -1588,7 +1587,7 @@ void mm_mint_mp4_Snd_MP4_Decode( int8_t *pBuffer, uint32_t bufferSize ){
 					memset( &pBuffer[done], 0, frame_size * sizeof(INT_PCM) );
 				}
 			}
-
+			// st_mem_free(pSndData);
 			done += frame_size * sizeof(INT_PCM);
 			frame_counter += 1;
 			mm_mint_mp4_snd.frames_counter++;
@@ -1601,7 +1600,6 @@ void mm_mint_mp4_Snd_MP4_Decode( int8_t *pBuffer, uint32_t bufferSize ){
 		free(pDec_data);
 		pDec_data = NULL;
 	}
-	st_mem_free(pSndData);
     mm_mint_mp4_snd.bytes_counter += done;
 }
 
@@ -1937,11 +1935,11 @@ void mm_mint_mp4_Snd_Close(){
 
 		NeAACDecHandle*  p_snd_handle = (NeAACDecHandle*)mm_mint_mp4_snd.pSndCodec_Handler;
 		faacDecClose(*p_snd_handle);
-		// st_mem_free(pSndData);
+		st_mem_free(pSndData);
 		mm_mint_mp4_snd.bytes_counter = 0;
 		if(mm_mint_mp4_snd.real_time_resampling == true){
 			VR->clear();
-			Mfree(VR);
+			st_mem_free(VR);
 		}
 
 		mm_mint_mp4_Snd_mem_free(mm_mint_mp4_snd.pBuffer);

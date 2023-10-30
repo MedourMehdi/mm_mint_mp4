@@ -2,7 +2,7 @@
 #include <mint/mintbind.h>
 #include <string.h> /* memset */
 #include "./mm_vscode_fix.h"
-
+#include <stdlib.h>
 /*
 	M.Medour 2022/09
 	The purpose of redefining functions here is to avoid vscode error message like "nom de registre inconnu 'd0'"
@@ -21,13 +21,15 @@ u_int16_t ARGB_to_RGB565(u_int8_t *ARGBPixel)
 
 void* st_mem_alloc(int32_t size){
 	void* mem_ptr = NULL;
-	mem_ptr = (void*)Mxalloc(size,3);
+	// mem_ptr = (void*)Mxalloc(size,3);
+	mem_ptr = (void*)malloc(size);
 	return mem_ptr;
 }
 
 void *st_mem_free(void *ptr){
 	if(ptr != NULL){
-		Mfree(ptr);
+		// Mfree(ptr);
+		free(ptr);
 		ptr = NULL;
 	}
 	return ptr;
