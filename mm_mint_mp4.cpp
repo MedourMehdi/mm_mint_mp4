@@ -209,6 +209,8 @@ typedef struct struct_mm_snd {
 
 struct_mm_snd  mm_mint_mp4_snd;
 faacDecConfigurationPtr config;
+
+uint8_t* pData = NULL;
 /****************************************************************/
 /*  RESAMPLING		                                */
 /****************************************************************/
@@ -1494,7 +1496,10 @@ void mm_mint_mp4_Snd_MP4_Decode( int8_t *pBuffer, uint32_t bufferSize ){
 	NeAACDecHandle*  	p_snd_handle = (NeAACDecHandle*)mm_mint_mp4_snd.pSndCodec_Handler;
     MP4FileHandle*      p_mp4_handle = (MP4FileHandle*)mm_mint_mp4_snd.pMP4_Handler;
 
-	uint8_t* pData = (uint8_t*)st_mem_alloc(mm_mint_mp4_snd.track_max_frame_size);
+	if(pData == NULL){
+		pData = (uint8_t*)st_mem_alloc(mm_mint_mp4_snd.track_max_frame_size);
+	}
+
 
 	if(mm_mint_mp4_snd.is_paused != true){
 		while( done < bufferSize && mm_mint_mp4_snd.frames_counter < mm_mint_mp4_snd.total_frames && app_end != true) {
@@ -1554,7 +1559,6 @@ void mm_mint_mp4_Snd_MP4_Decode( int8_t *pBuffer, uint32_t bufferSize ){
 			frame_counter += 1;
 			mm_mint_mp4_snd.frames_counter++;
 
-			st_mem_free(pData);
 		}
 	} else {
 		memset( pBuffer, 0, bufferSize);
@@ -1895,15 +1899,16 @@ void mm_mint_mp4_Close(){
 
 void mm_mint_mp4_Snd_Close(){
 	if(mm_mint_mp4_snd.track_number > 0) {
-		printf("dbg 1\n");
+
 		NeAACDecHandle*  p_snd_handle = (NeAACDecHandle*)mm_mint_mp4_snd.pSndCodec_Handler;
 		faacDecClose(*p_snd_handle);
+		st_mem_free(pData);
 		mm_mint_mp4_snd.bytes_counter = 0;
 		if(mm_mint_mp4_snd.real_time_resampling == true){
 			VR->clear();
 			Mfree(VR);
 		}
-		printf("dbg 2\n");
+
 		mm_mint_mp4_Snd_mem_free(mm_mint_mp4_snd.pBuffer);
 	}
 }
@@ -1919,12 +1924,11 @@ void mm_mint_mp4_Vid_Close(){
 				duration, 
 				( (mm_mint_mp4_vid.frames_counter - mm_mint_mp4_vid.frames_dropped) / (duration / 1000)) );
 		if(pVidCodec_Handler != NULL){
-			printf("dbg 3\n");
+
 			pVidCodec_Handler->Uninitialize();
-			printf("dbg 4.x\n");
 			WelsDestroyDecoder(pVidCodec_Handler);
 			st_mem_free(pDstBufInfo);
-			printf("dbg 4\n");
+
 		}
 		st_mem_free(mm_wi_mfdb.fd_addr);
 	}
