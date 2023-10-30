@@ -9,6 +9,16 @@
 	This is caused by trap definitions & vscode don't know motorola 68k registers.
 */
 
+u_int16_t ARGB_to_RGB565(u_int8_t *ARGBPixel)
+{
+    u_int16_t b = (ARGBPixel[3] >> 3) & 0x1f;
+    u_int16_t g = ((ARGBPixel[2] >> 2) & 0x3f) << 5;
+    u_int16_t r = ((ARGBPixel[1] >> 3) & 0x1f) << 11;
+
+    return (u_int16_t) (r | g | b);
+}
+
+
 void* st_mem_alloc(int32_t size){
 	void* mem_ptr = NULL;
 	mem_ptr = (void*)Mxalloc(size,3);
@@ -16,8 +26,11 @@ void* st_mem_alloc(int32_t size){
 }
 
 void *st_mem_free(void *ptr){
-	Mfree(ptr);
-	return NULL;
+	if(ptr != NULL){
+		Mfree(ptr);
+		ptr = NULL;
+	}
+	return ptr;
 }
 
 void *st_mem_calloc(int32_t size){
@@ -53,6 +66,11 @@ void *mm_mint_mp4_Snd_mem_alloc(int32_t size){
 	mem_ptr = (void*)Mxalloc(size,0);
 	// mem_ptr = (void*)malloc(size);
 	return mem_ptr;
+}
+
+void *mm_mint_mp4_Snd_mem_free(void *ptr){
+	Mfree(ptr);
+	return NULL;
 }
 
 void enableTimerASei( void )

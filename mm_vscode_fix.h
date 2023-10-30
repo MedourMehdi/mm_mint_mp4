@@ -25,6 +25,8 @@ void    *st_mem_alloc(int32_t size);
 void    *st_mem_calloc(int32_t size);
 void    *st_mem_free(void *ptr);
 void    *mm_mint_mp4_Snd_mem_alloc(int32_t size);
+void    *mm_mint_mp4_Snd_mem_free(void *ptr);
+u_int16_t ARGB_to_RGB565(u_int8_t *ARGBPixel);
 void    st_Vsync( int16_t nb_vsync );
 int32_t st_Soundcmd( int16_t mode, int16_t data );
 int32_t st_Sndstatus( int16_t reset );

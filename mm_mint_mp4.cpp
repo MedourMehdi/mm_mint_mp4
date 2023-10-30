@@ -72,6 +72,8 @@
 
 #define COMPUTE_TRANSPARENCY(adjustedColor, opacity, foregroundColor, backgroundColor) { adjustedColor = opacity * foregroundColor + (1 - opacity) * backgroundColor; }
 
+#define mul_3_fast(x) ((x << 1) + x)
+
 #ifndef __GEMLIB_AES
 extern int16_t gl_apid;
 #else
@@ -249,6 +251,9 @@ void mm_mint_mp4_Open();
 void mm_mint_mp4_Snd_MP4_Decode( int8_t *pBuffer, uint32_t bufferSize );
 void mm_mint_mp4_Vid_MP4_Decode();
 void mm_mint_mp4_Close();
+
+void mm_mint_mp4_Snd_Close();
+void mm_mint_mp4_Vid_Close();
 
 void mm_mint_mp4_Snd_Mute();
 void mm_mint_mp4_Snd_Pause();
@@ -631,7 +636,7 @@ void mm_ico_Load(MFDB *dest_mfdb, struct_mm_ico_png *ico){
 	int16_t		width = ico->mm_ico_mfdb.fd_w;
 	int16_t		height = ico->mm_ico_mfdb.fd_h;
 	int16_t		x, y;
-	uint32_t	m, n, i, j;
+	uint32_t	m, n, i, j, k;
 	uint8_t		fg_r, fg_g, fg_b, a, r, g, b, red, green, blue;
 
 	for(y = 0; y < height; y++){
@@ -639,30 +644,72 @@ void mm_ico_Load(MFDB *dest_mfdb, struct_mm_ico_png *ico){
 		n = (dest_mfdb->fd_w * y );
 		for(x = 0; x < width; x++){
 			j = ((m + x) << 2);
-			i = ((n + x + ico->x) << 2);
+			i = (n + x + ico->x);
+			switch (dest_mfdb->fd_nplanes)
+			{
+			case 16:
+				i = i << 1;
+				k = i;
+				break;
+			case 24:
+				i = (i << 1) + i;
+				k = i - 1;
+				break;
+			case 32:
+				i = i << 2;
+				k = i;
+				break;							
+			default:
+				break;
+			}
 			a = ico_buffer[j++];
 			r = ico_buffer[j++];
 			g = ico_buffer[j++];
 			b = ico_buffer[j++];
-			if( a == 255){
+			switch (a)
+			{
+			case 255:
 				fg_r	= r;
 				fg_g	= g;
 				fg_b 	= b;
+				break;
+			case 0:
+				fg_r	= destination_buffer[k + 1];
+				fg_g	= destination_buffer[k + 2];
+				fg_b	= destination_buffer[k + 3];
+				break;			
+			default:
+				COMPUTE_TRANSPARENCY(fg_r, a/255, r, destination_buffer[k + 1]);
+				COMPUTE_TRANSPARENCY(fg_g, a/255, g, destination_buffer[k + 2]);
+				COMPUTE_TRANSPARENCY(fg_b, a/255, b, destination_buffer[k + 3]);			
+				break;
 			}
-			else if ( a == 0){
-				fg_r	= destination_buffer[i + 1];
-				fg_g	= destination_buffer[i + 2];
-				fg_b	= destination_buffer[i + 3];
+
+			switch (dest_mfdb->fd_nplanes)
+			{
+			case 16:
+				if(a == 255){
+					u_int32_t pix32 = (a << 24) | ((fg_r & 0xFF) << 16) | ((fg_g & 0xFF) << 8) | (fg_b & 0xFF);
+					u_int16_t* pix16 = (u_int16_t*)&destination_buffer[i];
+					*pix16 = ARGB_to_RGB565((u_int8_t*)&pix32);
+				}
+				i += 2;
+				break;
+			case 24:
+				destination_buffer[i++] = fg_r;
+				destination_buffer[i++] = fg_g;
+				destination_buffer[i++] = fg_b;
+				break;
+			case 32:
+				destination_buffer[i++] = a;
+				destination_buffer[i++] = fg_r;
+				destination_buffer[i++] = fg_g;
+				destination_buffer[i++] = fg_b;
+				break;	
+			default:
+				break;
 			}
-			else{
-				COMPUTE_TRANSPARENCY(fg_r, a/255, r, destination_buffer[i + 1]);
-				COMPUTE_TRANSPARENCY(fg_g, a/255, g, destination_buffer[i + 2]);
-				COMPUTE_TRANSPARENCY(fg_b, a/255, b, destination_buffer[i + 3]);
-			}
-			destination_buffer[i++] = a;
-			destination_buffer[i++] = fg_r;
-			destination_buffer[i++] = fg_g;
-			destination_buffer[i++] = fg_b;
+
 		}
 	}
 }
@@ -922,15 +969,16 @@ int main(int argc, char *argv[])
 
 	if(mm_mint_mp4_vid.track_number > 0) {
 		pthread_join( thread_video, NULL);
+		mm_mint_mp4_Vid_Close();
 	}
 
 	if(mm_mint_mp4_snd.track_number > 0) {
 		pthread_join( thread_sound, NULL);
-	}
-
-	if(mm_mint_mp4_snd.track_number > 0) {
 		mm_mint_mp4_Snd_UnSet();
 	}
+
+	mm_mint_mp4_Close();
+
 	wind_close(wi_handle);
 	wind_delete(wi_handle);
 	v_clsvwk(handle);
@@ -1030,7 +1078,7 @@ void mm_mint_mp4_Snd_UnSet(){
 	st_Buffoper( 0x00 );	// disable playback
 	st_Jdisint( MFP_TIMERA );
 	mm_mint_mp4_snd.mm_mint_mp4_Snd_Close();
-	free( mm_mint_mp4_snd.pBuffer );
+	mm_mint_mp4_Snd_mem_free( mm_mint_mp4_snd.pBuffer );
 	mm_mint_mp4_snd.pBuffer = NULL;
 
 	mm_mint_mp4_snd.is_playing = false;
@@ -1113,10 +1161,10 @@ void mm_mint_mp4_Snd_PCM16_to_Float(float *outbuf, short *inbuf, int length)
 void mm_mint_mp4_Init(){
     mm_mint_mp4_snd.mm_mint_mp4_Snd_Open = mm_mint_mp4_Open;
     mm_mint_mp4_snd.mm_mint_mp4_Snd_Feed_Buffer = mm_mint_mp4_Snd_MP4_Decode;
-    mm_mint_mp4_snd.mm_mint_mp4_Snd_Close = mm_mint_mp4_Close;
+    mm_mint_mp4_snd.mm_mint_mp4_Snd_Close = mm_mint_mp4_Snd_Close;
 	mm_mint_mp4_vid.mm_mint_mp4_Vid_Open = mm_mint_mp4_snd.mm_mint_mp4_Snd_Open;
 	mm_mint_mp4_vid.mm_mint_mp4_Vid_Feed = mm_mint_mp4_Vid_MP4_Decode;
-	mm_mint_mp4_vid.mm_mint_mp4_Vid_Close = mm_mint_mp4_Close;
+	mm_mint_mp4_vid.mm_mint_mp4_Vid_Close = mm_mint_mp4_Vid_Close;
 
 #ifdef PREFER_25KH
 	/* If we prefer downscaling instead upscaling */
@@ -1199,7 +1247,7 @@ void mm_mint_mp4_Open(){
 
 		printf("***\tAudio Track ID %d\t***\n", mm_mint_mp4_snd.track_number);
 
-		mm_mint_mp4_snd.pSndCodec_Handler = (NeAACDecHandle *)malloc(sizeof(NeAACDecHandle));
+		mm_mint_mp4_snd.pSndCodec_Handler = (NeAACDecHandle *)st_mem_alloc(sizeof(NeAACDecHandle));
 		NeAACDecHandle*	p_snd_handle = (NeAACDecHandle *)mm_mint_mp4_snd.pSndCodec_Handler;
 		*p_snd_handle = faacDecOpen();
 
@@ -1309,7 +1357,7 @@ void mm_mint_mp4_Open(){
 
 		if(mm_mint_mp4_snd.real_time_resampling == true) {
 			mm_mint_mp4_snd.resampling_ratio = (double)mm_mint_mp4_snd.new_samplerate / mm_mint_mp4_snd.ori_samplerate;
-			VR = (VResampler *)Mxalloc(sizeof(VResampler), 3);
+			VR = (VResampler *)Mxalloc(sizeof(VResampler), 0);
 			if (VR->setup(mm_mint_mp4_snd.resampling_ratio, (unsigned int)this_channels, (unsigned int)FILTSIZE)) {
 				fprintf (stderr, "Sample rate ratio %d/%d is not supported.\n", mm_mint_mp4_snd.new_samplerate, mm_mint_mp4_snd.ori_samplerate);
 			} else {
@@ -1360,7 +1408,7 @@ void mm_mint_mp4_Open(){
 		// if no audio mp4v2 seems to crash here
 		mm_mint_mp4_vid.video_sample_max_size = MP4GetTrackMaxSampleSize(p_mp4_handle, mm_mint_mp4_vid.track_number) << 1;
 
-		mm_mint_mp4_vid.video_sample = (uint8_t*)malloc(mm_mint_mp4_vid.video_sample_max_size);
+		mm_mint_mp4_vid.video_sample = (uint8_t*)st_mem_alloc(mm_mint_mp4_vid.video_sample_max_size);
 
 		video_sample = mm_mint_mp4_vid.video_sample;
 			if (pSeqHeaders && pSeqHeaderSize) {
@@ -1411,21 +1459,20 @@ void mm_mint_mp4_Open(){
 		int16_t height = 50;
 		mm_ico_win_delta_y = 40;
 		open_window( width, height, basename(mm_mint_mp4_snd.filename) );
-		int16_t nb_px_needed_to_resize = MFDB_STRIDE(width) - width;
-		uint32_t st_modified_buffer_size = ((width + nb_px_needed_to_resize) * height) << 2;
-		int8_t *st_modified_buffer = (int8_t *)malloc(st_modified_buffer_size);
+		uint32_t st_modified_buffer_size = (MFDB_STRIDE(width) * height) * (work_out_extended[4] >> 3);
+		int8_t *st_modified_buffer = (int8_t *)st_mem_alloc(st_modified_buffer_size);
 		memset( st_modified_buffer, 0, st_modified_buffer_size );
 		mm_wi_mfdb.fd_nplanes = work_out_extended[4];
 		mm_wi_mfdb.fd_stand = 0;
-		mm_wi_mfdb.fd_w = width + nb_px_needed_to_resize;
+		mm_wi_mfdb.fd_w = MFDB_STRIDE(width);
 		mm_wi_mfdb.fd_h = height;
 		mm_wi_mfdb.fd_wdwidth = MFDB_STRIDE(mm_wi_mfdb.fd_w) >> 4;
 		mm_wi_mfdb.fd_addr = st_modified_buffer;
 
-		int8_t* mm_control_bar_buffer = &st_modified_buffer[ ((width + nb_px_needed_to_resize) * (height - mm_ico_win_delta_y)) << 2 ];
+		int8_t* mm_control_bar_buffer = &st_modified_buffer[ (MFDB_STRIDE(width) * (height - mm_ico_win_delta_y)) * (work_out_extended[4] >> 3) ];
 		mm_control_bar_mfdb.fd_addr = mm_control_bar_buffer;
 		mm_control_bar_mfdb.fd_h = mm_ico_win_delta_y;
-		mm_control_bar_mfdb.fd_w = width + nb_px_needed_to_resize;
+		mm_control_bar_mfdb.fd_w = MFDB_STRIDE(width);
 		mm_control_bar_mfdb.fd_stand = 0;
 		mm_control_bar_mfdb.fd_wdwidth = MFDB_STRIDE( mm_control_bar_mfdb.fd_w ) >> 4;
 		mm_control_bar_mfdb.fd_nplanes = work_out_extended[4];
@@ -1445,11 +1492,12 @@ void mm_mint_mp4_Snd_MP4_Decode( int8_t *pBuffer, uint32_t bufferSize ){
 	NeAACDecHandle*  	p_snd_handle = (NeAACDecHandle*)mm_mint_mp4_snd.pSndCodec_Handler;
     MP4FileHandle*      p_mp4_handle = (MP4FileHandle*)mm_mint_mp4_snd.pMP4_Handler;
 
+	uint8_t* pData = (uint8_t*)st_mem_alloc(mm_mint_mp4_snd.track_max_frame_size);
+
 	if(mm_mint_mp4_snd.is_paused != true){
 		while( done < bufferSize && mm_mint_mp4_snd.frames_counter < mm_mint_mp4_snd.total_frames && app_end != true) {
 
 			uint32_t packet_size = mm_mint_mp4_snd.track_max_frame_size;
-			uint8_t*	pData = (uint8_t*)malloc(packet_size);
 
 			MP4ReadSample(p_mp4_handle, mm_mint_mp4_snd.track_number, mm_mint_mp4_snd.frames_counter, (uint8_t **) &pData, &packet_size, NULL, NULL, NULL, NULL);
 
@@ -1504,7 +1552,7 @@ void mm_mint_mp4_Snd_MP4_Decode( int8_t *pBuffer, uint32_t bufferSize ){
 			frame_counter += 1;
 			mm_mint_mp4_snd.frames_counter++;
 
-			free(pData);
+			st_mem_free(pData);
 		}
 	} else {
 		memset( pBuffer, 0, bufferSize);
@@ -1527,15 +1575,12 @@ void mm_mint_mp4_Vid_MP4_Decode(){
 	uint32_t width, height, original_width, original_height;
 	uint32_t out_size, max_out_size, st_modified_buffer_size, pDestData_size;
 	uint32_t scaled_half_size;
-    uint32_t original_nb_px_needed_to_resize;
 
     uint8_t *pData[3] = {0};
     uint8_t *pDestData = NULL;
     uint8_t *pDestY, *pDestU, *pDestV;
 
 	int16_t  nb_components_32bits = 4;
-	int16_t  nb_px_needed_to_resize = 0;
-
 
 	int8_t *st_modified_buffer = NULL;
 
@@ -1594,7 +1639,6 @@ void mm_mint_mp4_Vid_MP4_Decode(){
 		if( pDstBufInfo.iBufferStatus == 1 && skip_frame == false) {		
 			original_width = pDstBufInfo.UsrData.sSystemBuffer.iWidth;
 			original_height = pDstBufInfo.UsrData.sSystemBuffer.iHeight;
-			original_nb_px_needed_to_resize = MFDB_STRIDE(original_width) - original_width;
 			mm_mint_mp4_vid.video_ratio = (float)original_width / original_height;
 			int Y_Stride = pDstBufInfo.UsrData.sSystemBuffer.iStride[0];
 			int UV_Stride = pDstBufInfo.UsrData.sSystemBuffer.iStride[1];
@@ -1608,29 +1652,28 @@ void mm_mint_mp4_Vid_MP4_Decode(){
 				height = hwork;
 			}
 
-			nb_px_needed_to_resize = MFDB_STRIDE(width) - width;
 			out_size = width * height;
 			scaled_half_size = (width + 1) >> 1;
 
 			if(mm_mint_mp4_vid.limit_upscale == true){
-				st_modified_buffer_size = ((original_width + original_nb_px_needed_to_resize) * original_height) << 2;
+				st_modified_buffer_size = (MFDB_STRIDE(original_width) * original_height) * ((work_out_extended[4]) >> 3);
 				pDestData_size = ( max_out_size << 1 );
 			} else {
-				st_modified_buffer_size = ((width + nb_px_needed_to_resize) * (height + 1)) << 2;
+				st_modified_buffer_size = (MFDB_STRIDE(width) * (height + 1)) * ((work_out_extended[4]) >> 3);
 				pDestData_size = ( out_size << 1 );
 				mm_wi_mfdb.fd_addr = NULL;
 				if(mm_mint_mp4_vid.frames_counter > 0){
-					free( st_modified_buffer );
-					free( pDestData );
+					st_mem_free( st_modified_buffer );
+					st_mem_free( pDestData );
 				}
 				st_modified_buffer = NULL;
 				pDestData = NULL;
 			}
 			if (st_modified_buffer == NULL) {
-				st_modified_buffer = (int8_t *)malloc(st_modified_buffer_size);
+				st_modified_buffer = (int8_t *)st_mem_alloc(st_modified_buffer_size);
 			}
 			if( pDestData == NULL ) { 
-				pDestData = (uint8_t*)malloc(pDestData_size);
+				pDestData = (uint8_t*)st_mem_alloc(pDestData_size);
 			}
 			memset(pDestData, 0, pDestData_size);
 			memset(st_modified_buffer, 0, st_modified_buffer_size);
@@ -1642,16 +1685,36 @@ void mm_mint_mp4_Vid_MP4_Decode(){
 												pData[1], UV_Stride,
 												pData[2], UV_Stride, 
 												(uint8_t*)st_modified_buffer, 
-												(width + nb_px_needed_to_resize) << 2, 
+												MFDB_STRIDE(width) << 2, 
 												width, height);
 						mm_wi_mfdb.fd_nplanes = 32;
+					break;
+					case 24:
+						libyuv::I420ToRGB24( 	pData[0], Y_Stride,
+									pData[1], UV_Stride,
+									pData[2], UV_Stride, 
+									(uint8_t*)st_modified_buffer, 
+									MFDB_STRIDE(width) * 3, 
+									width, height);
+						mm_wi_mfdb.fd_nplanes = 24;
+						// for( u_int16_t y = 0; y < height; y++ ) {
+						// 	for( u_int16_t x = 0; x < width; x++ ) {
+						// 		uint32_t index = ((y * MFDB_STRIDE(width)) + x) * 3;
+						// 		uint8_t b = *st_modified_buffer++;
+						// 		uint8_t g = *st_modified_buffer++;
+						// 		uint8_t r = *st_modified_buffer++;
+						// 		st_modified_buffer[ index++ ] = r;
+						// 		st_modified_buffer[ index++ ] = g;
+						// 		st_modified_buffer[ index++ ] = b;
+						// 	}
+						// }						
 					break;
 					case 16:
 						libyuv::I420ToRGB565( 	pData[0], Y_Stride,
 									pData[1], UV_Stride,
 									pData[2], UV_Stride, 
 									(uint8_t*)st_modified_buffer, 
-									(width + nb_px_needed_to_resize) << 1, 
+									MFDB_STRIDE(width) << 1, 
 									width, height);
 						mm_wi_mfdb.fd_nplanes = 16;
 					break;
@@ -1682,16 +1745,25 @@ void mm_mint_mp4_Vid_MP4_Decode(){
 												pDestU, scaled_half_size,
 												pDestV, scaled_half_size, 
 												(uint8_t*)st_modified_buffer, 
-												(width + nb_px_needed_to_resize) << 2, 
+												MFDB_STRIDE(width) << 2, 
 												width, height);
 						mm_wi_mfdb.fd_nplanes = 32;
 					break;
+					case 24:
+						libyuv::I420ToRGB24( 	pDestY, width,
+												pDestU, scaled_half_size,
+												pDestV, scaled_half_size, 
+												(uint8_t*)st_modified_buffer, 
+												MFDB_STRIDE(width) * 3, 
+												width, height);
+						mm_wi_mfdb.fd_nplanes = 24;
+					break;					
 					case 16:
 						libyuv::I420ToRGB565( 	pDestY, width,
 									pDestU, scaled_half_size,
 									pDestV, scaled_half_size, 
 									(uint8_t*)st_modified_buffer, 
-									(width + nb_px_needed_to_resize) << 1, 
+									MFDB_STRIDE(width) << 1, 
 									width, height);
 						mm_wi_mfdb.fd_nplanes = 16;
 					break;
@@ -1701,7 +1773,7 @@ void mm_mint_mp4_Vid_MP4_Decode(){
 			}
 
 			mm_wi_mfdb.fd_stand = 0;
-			mm_wi_mfdb.fd_w = width + nb_px_needed_to_resize;
+			mm_wi_mfdb.fd_w = MFDB_STRIDE(width);
 			mm_wi_mfdb.fd_h = height;
 			mm_wi_mfdb.fd_wdwidth = MFDB_STRIDE(mm_wi_mfdb.fd_w) >> 4;
 			mm_wi_mfdb.fd_addr = st_modified_buffer;
@@ -1765,10 +1837,10 @@ void mm_mint_mp4_Vid_MP4_Decode(){
 			sprintf(time_left_sec, "%lu secs", mm_mint_mp4_vid.computed_left_time_sec);
 
 			if(mm_ico_win_delta_y > 0){
-				mm_control_bar_buffer = &st_modified_buffer[ ((width + nb_px_needed_to_resize) * (height - mm_ico_win_delta_y)) << 2 ];
+				mm_control_bar_buffer = &st_modified_buffer[ (MFDB_STRIDE(width) * (height - mm_ico_win_delta_y)) * ((work_out_extended[4]) >> 3) ];
 				mm_control_bar_mfdb.fd_addr = mm_control_bar_buffer;
 				mm_control_bar_mfdb.fd_h = mm_ico_win_delta_y;
-				mm_control_bar_mfdb.fd_w = width + nb_px_needed_to_resize;
+				mm_control_bar_mfdb.fd_w = MFDB_STRIDE(width);
 				mm_control_bar_mfdb.fd_stand = 0;
 				mm_control_bar_mfdb.fd_wdwidth = MFDB_STRIDE( mm_control_bar_mfdb.fd_w ) >> 4;
 				mm_control_bar_mfdb.fd_nplanes = work_out_extended[4];
@@ -1812,7 +1884,16 @@ void mm_mint_mp4_Vid_MP4_Decode(){
 }
 
 void mm_mint_mp4_Close(){
+	MP4FileHandle*      p_mp4_handle = (MP4FileHandle*)mm_mint_mp4_snd.pMP4_Handler;
+	if(p_mp4_handle != NULL){
+		MP4Close(p_mp4_handle);
+		st_mem_free(p_mp4_handle);	
+	}
+}
+
+void mm_mint_mp4_Snd_Close(){
 	if(mm_mint_mp4_snd.track_number > 0) {
+		printf("dbg 1\n");
 		NeAACDecHandle*  p_snd_handle = (NeAACDecHandle*)mm_mint_mp4_snd.pSndCodec_Handler;
 		faacDecClose(*p_snd_handle);
 		mm_mint_mp4_snd.bytes_counter = 0;
@@ -1820,9 +1901,13 @@ void mm_mint_mp4_Close(){
 			VR->clear();
 			Mfree(VR);
 		}
-		free(mm_mint_mp4_snd.pBuffer);
+		printf("dbg 2\n");
+		mm_mint_mp4_Snd_mem_free(mm_mint_mp4_snd.pBuffer);
 	}
-		
+}
+
+void mm_mint_mp4_Vid_Close(){
+
 	if(mm_mint_mp4_vid.track_number > 0) {
 		time_end = st_Supexec(get200hz);
 		duration = clock_unit * (time_end - time_start);
@@ -1832,15 +1917,15 @@ void mm_mint_mp4_Close(){
 				duration, 
 				( (mm_mint_mp4_vid.frames_counter - mm_mint_mp4_vid.frames_dropped) / (duration / 1000)) );
 		if(pVidCodec_Handler != NULL){
+			printf("dbg 3\n");
 			pVidCodec_Handler->Uninitialize();
+			printf("dbg 4.x\n");
 			WelsDestroyDecoder(pVidCodec_Handler);
+			printf("dbg 4\n");
 		}
-		free(mm_wi_mfdb.fd_addr);
+		st_mem_free(mm_wi_mfdb.fd_addr);
 	}
 
-	MP4FileHandle*      p_mp4_handle = (MP4FileHandle*)mm_mint_mp4_snd.pMP4_Handler;
-	MP4Close(p_mp4_handle);
-	free(p_mp4_handle);
 }
 
 void* mm_mint_mp4_Vid_Play(void* p_param){
