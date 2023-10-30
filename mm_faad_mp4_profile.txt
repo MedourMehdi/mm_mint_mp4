@@ -1,0 +1,502 @@
+Flat profile:
+
+Each sample counts as 0.01 seconds.
+  %   cumulative   self              self     total           
+ time   seconds   seconds    calls   s/call   s/call  name    
+ 38.81      6.85     6.85  6611676     0.00     0.00  st_Buffptr(int*)
+ 30.59     12.25     5.40                             lseek
+ 25.61     16.77     4.52                             mt_evnt_multi
+  3.34     17.36     0.59                             gettimeofday
+  1.30     17.59     0.23       63     0.00     0.00  st_Setbuffer(short, void*, void*)
+  0.06     17.60     0.01                             free
+  0.06     17.61     0.01                             mt_wind_set
+  0.06     17.62     0.01                             poll
+  0.06     17.63     0.01                             read
+  0.06     17.64     0.01                             siglongjmp
+  0.06     17.65     0.01                             sigsetjmp
+  0.00     17.65     0.00  6611676     0.00     0.00  mm_mint_mp4_Snd_Get_Playback_Position()
+  0.00     17.65     0.00     2753     0.00     0.00  mm_mint_mp4_Snd_Float_to_PCM16(short*, float*, int)
+  0.00     17.65     0.00     2753     0.00     0.00  mm_mint_mp4_Snd_PCM16_to_Float(float*, short*, int)
+  0.00     17.65     0.00     2211     0.00     0.00  set_clip(short, short, short, short, short)
+  0.00     17.65     0.00     1452     0.00     0.00  multi(void*)
+  0.00     17.65     0.00     1451     0.00     0.00  mm_mint_mp4_Snd_Feed()
+  0.00     17.65     0.00     1141     0.00     0.00  hide_mouse()
+  0.00     17.65     0.00     1141     0.00     0.00  show_mouse()
+  0.00     17.65     0.00      219     0.00     0.00  mm_mint_H264_Log_Callback(void*, int, char const*)
+  0.00     17.65     0.00      176     0.00     0.00  st_mem_alloc(int)
+  0.00     17.65     0.00      169     0.00     0.00  st_mem_free(void*)
+  0.00     17.65     0.00       64     0.00     0.00  mm_mint_mp4_Snd_LoadBuffer(signed char*, unsigned int)
+  0.00     17.65     0.00       64     0.00     0.00  mm_mint_mp4_Snd_MP4_Decode(signed char*, unsigned int)
+  0.00     17.65     0.00        7     0.00     0.00  st_Soundcmd(short, short)
+  0.00     17.65     0.00        5     0.00     0.00  mm_ico_Decompress(char const*, memory_form*)
+  0.00     17.65     0.00        3     0.00     0.00  st_Supexec(int (*)())
+  0.00     17.65     0.00        2     0.00     0.00  st_Buffoper(short)
+  0.00     17.65     0.00        2     0.00     0.00  mm_mint_mp4_Snd_mem_free(void*)
+  0.00     17.65     0.00        1     0.00     0.00  open_vwork()
+  0.00     17.65     0.00        1     0.00     0.00  st_Jdisint(short)
+  0.00     17.65     0.00        1     0.00     0.00  st_Locksnd()
+  0.00     17.65     0.00        1     0.00     0.00  st_Setmode(short)
+  0.00     17.65     0.00        1     0.00     0.00  st_Xbtimer(short, short, short, void (*)())
+  0.00     17.65     0.00        1     0.00     0.00  mm_ico_Init()
+  0.00     17.65     0.00        1     0.00     0.00  open_window(int, int, char const*)
+  0.00     17.65     0.00        1     0.00     0.00  st_Jenabint(short)
+  0.00     17.65     0.00        1     0.00     0.00  st_Sndstatus(short)
+  0.00     17.65     0.00        1     0.00     0.00  st_Unlocksnd()
+  0.00     17.65     0.00        1     0.00     0.00  st_Devconnect(short, short, short, short, short)
+  0.00     17.65     0.00        1     0.00     0.00  stringtolower(char*)
+  0.00     17.65     0.00        1     0.00     0.00  exec_eventloop(void*)
+  0.00     17.65     0.00        1     0.00     0.00  mm_ico_Update_x(unsigned short, short, short)
+  0.00     17.65     0.00        1     0.00     0.00  st_Setinterrupt(short, short)
+  0.00     17.65     0.00        1     0.00     0.00  get_filename_ext(char const*)
+  0.00     17.65     0.00        1     0.00     0.00  mm_mint_mp4_Init()
+  0.00     17.65     0.00        1     0.00     0.00  mm_mint_mp4_Open()
+  0.00     17.65     0.00        1     0.00     0.00  mm_mint_mp4_Close()
+  0.00     17.65     0.00        1     0.00     0.00  st_Send_WM_REDRAW()
+  0.00     17.65     0.00        1     0.00     0.00  st_enableTimerASei()
+  0.00     17.65     0.00        1     0.00     0.00  mm_mint_mp4_Snd_Set()
+  0.00     17.65     0.00        1     0.00     0.00  mm_mint_mp4_Snd_Init()
+  0.00     17.65     0.00        1     0.00     0.23  mm_mint_mp4_Snd_Play(void*)
+  0.00     17.65     0.00        1     0.00     6.85  mm_mint_mp4_Vid_Play(void*)
+  0.00     17.65     0.00        1     0.00     0.00  mm_mint_mp4_Snd_Close()
+  0.00     17.65     0.00        1     0.00     0.00  mm_mint_mp4_Snd_UnSet()
+  0.00     17.65     0.00        1     0.00     0.00  mm_mint_mp4_Vid_Close()
+  0.00     17.65     0.00        1     0.00     0.00  mm_mint_mp4_Snd_mem_alloc(int)
+  0.00     17.65     0.00        1     0.00     6.85  mm_mint_mp4_Vid_MP4_Decode()
+  0.00     17.65     0.00        1     0.00     0.00  mm_mint_mp4_Get_First_AudioTrack(void**)
+  0.00     17.65     0.00        1     0.00     0.00  mm_mint_mp4_Get_First_VideoTrack(void**)
+  0.00     17.65     0.00        1     0.00     0.00  check_ext(char const*, char const*)
+  0.00     17.65     0.00        1     0.00     0.00  appl_init
+  0.00     17.65     0.00        1     0.00     0.00  main
+
+ %         the percentage of the total running time of the
+time       program used by this function.
+
+cumulative a running sum of the number of seconds accounted
+ seconds   for by this function and those listed above it.
+
+ self      the number of seconds accounted for by this
+seconds    function alone.  This is the major sort for this
+           listing.
+
+calls      the number of times this function was invoked, if
+           this function is profiled, else blank.
+
+ self      the average number of milliseconds spent in this
+ms/call    function per call, if this function is profiled,
+	   else blank.
+
+ total     the average number of milliseconds spent in this
+ms/call    function and its descendents per call, if this
+	   function is profiled, else blank.
+
+name       the name of the function.  This is the minor sort
+           for this listing. The index shows the location of
+	   the function in the gprof listing. If the index is
+	   in parenthesis it shows where it would appear in
+	   the gprof listing if it were to be printed.
+
+Copyright (C) 2012-2023 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
+
+		     Call graph (explanation follows)
+
+
+granularity: each sample hit covers 4 byte(s) for 0.06% of 17.65 seconds
+
+index % time    self  children    called     name
+                                                 <spontaneous>
+[1]     40.1    0.00    7.08                 pth_exit [1]
+                0.00    6.85       1/1           mm_mint_mp4_Vid_Play(void*) [4]
+                0.00    0.23       1/1           mm_mint_mp4_Snd_Play(void*) [11]
+                0.00    0.00       1/1           exec_eventloop(void*) [51]
+-----------------------------------------------
+                6.85    0.00 6611676/6611676     mm_mint_mp4_Snd_Get_Playback_Position() [3]
+[2]     38.8    6.85    0.00 6611676         st_Buffptr(int*) [2]
+-----------------------------------------------
+                0.00    6.85 6611676/6611676     mm_mint_mp4_Vid_MP4_Decode() [5]
+[3]     38.8    0.00    6.85 6611676         mm_mint_mp4_Snd_Get_Playback_Position() [3]
+                6.85    0.00 6611676/6611676     st_Buffptr(int*) [2]
+-----------------------------------------------
+                0.00    6.85       1/1           pth_exit [1]
+[4]     38.8    0.00    6.85       1         mm_mint_mp4_Vid_Play(void*) [4]
+                0.00    6.85       1/1           mm_mint_mp4_Vid_MP4_Decode() [5]
+-----------------------------------------------
+                0.00    6.85       1/1           mm_mint_mp4_Vid_Play(void*) [4]
+[5]     38.8    0.00    6.85       1         mm_mint_mp4_Vid_MP4_Decode() [5]
+                0.00    6.85 6611676/6611676     mm_mint_mp4_Snd_Get_Playback_Position() [3]
+                0.00    0.00    2209/2211        set_clip(short, short, short, short, short) [25]
+                0.00    0.00    1141/1141        hide_mouse() [27]
+                0.00    0.00    1141/1141        show_mouse() [28]
+                0.00    0.00       2/3           st_Supexec(int (*)()) [36]
+                0.00    0.00       2/176         st_mem_alloc(int) [30]
+-----------------------------------------------
+                                                 <spontaneous>
+[6]     30.6    5.40    0.00                 lseek [6]
+-----------------------------------------------
+                                                 <spontaneous>
+[7]     25.6    4.52    0.00                 mt_evnt_multi [7]
+-----------------------------------------------
+                                                 <spontaneous>
+[8]      3.3    0.59    0.00                 gettimeofday [8]
+-----------------------------------------------
+                0.00    0.00       1/63          mm_mint_mp4_Snd_Set() [18]
+                0.23    0.00      62/63          mm_mint_mp4_Snd_Feed() [10]
+[9]      1.3    0.23    0.00      63         st_Setbuffer(short, void*, void*) [9]
+-----------------------------------------------
+                0.00    0.23    1451/1451        mm_mint_mp4_Snd_Play(void*) [11]
+[10]     1.3    0.00    0.23    1451         mm_mint_mp4_Snd_Feed() [10]
+                0.23    0.00      62/63          st_Setbuffer(short, void*, void*) [9]
+                0.00    0.00      62/64          mm_mint_mp4_Snd_LoadBuffer(signed char*, unsigned int) [32]
+-----------------------------------------------
+                0.00    0.23       1/1           pth_exit [1]
+[11]     1.3    0.00    0.23       1         mm_mint_mp4_Snd_Play(void*) [11]
+                0.00    0.23    1451/1451        mm_mint_mp4_Snd_Feed() [10]
+-----------------------------------------------
+                                                 <spontaneous>
+[12]     0.1    0.01    0.00                 free [12]
+-----------------------------------------------
+                                                 <spontaneous>
+[13]     0.1    0.01    0.00                 mt_wind_set [13]
+-----------------------------------------------
+                                                 <spontaneous>
+[14]     0.1    0.01    0.00                 poll [14]
+-----------------------------------------------
+                                                 <spontaneous>
+[15]     0.1    0.01    0.00                 read [15]
+-----------------------------------------------
+                                                 <spontaneous>
+[16]     0.1    0.01    0.00                 siglongjmp [16]
+-----------------------------------------------
+                                                 <spontaneous>
+[17]     0.1    0.01    0.00                 sigsetjmp [17]
+-----------------------------------------------
+                0.00    0.00       1/1           main [19]
+[18]     0.0    0.00    0.00       1         mm_mint_mp4_Snd_Set() [18]
+                0.00    0.00       1/63          st_Setbuffer(short, void*, void*) [9]
+                0.00    0.00       3/7           st_Soundcmd(short, short) [34]
+                0.00    0.00       2/64          mm_mint_mp4_Snd_LoadBuffer(signed char*, unsigned int) [32]
+                0.00    0.00       1/1           mm_mint_mp4_Snd_mem_alloc(int) [64]
+                0.00    0.00       1/1           st_Sndstatus(short) [47]
+                0.00    0.00       1/1           st_Setmode(short) [42]
+                0.00    0.00       1/1           st_Devconnect(short, short, short, short, short) [49]
+                0.00    0.00       1/1           st_Setinterrupt(short, short) [53]
+                0.00    0.00       1/1           st_Xbtimer(short, short, short, void (*)()) [43]
+                0.00    0.00       1/1           st_enableTimerASei() [59]
+                0.00    0.00       1/1           st_Jenabint(short) [46]
+                0.00    0.00       1/2           st_Buffoper(short) [37]
+-----------------------------------------------
+                0.00    0.00       1/1           __libc_main [20]
+[19]     0.0    0.00    0.00       1         main [19]
+                0.00    0.00       1/1           mm_mint_mp4_Snd_Set() [18]
+                0.00    0.00       1/1           get_filename_ext(char const*) [54]
+                0.00    0.00       1/1           check_ext(char const*, char const*) [67]
+                0.00    0.00       1/1           appl_init [68]
+                0.00    0.00       1/1           open_vwork() [39]
+                0.00    0.00       1/1           mm_ico_Init() [44]
+                0.00    0.00       1/1           mm_mint_mp4_Snd_Init() [60]
+                0.00    0.00       1/1           mm_mint_mp4_Vid_Close() [63]
+                0.00    0.00       1/1           mm_mint_mp4_Snd_UnSet() [62]
+                0.00    0.00       1/1           mm_mint_mp4_Close() [57]
+-----------------------------------------------
+                                                 <spontaneous>
+[20]     0.0    0.00    0.00                 __libc_main [20]
+                0.00    0.00       1/1           main [19]
+-----------------------------------------------
+                0.00    0.00    2753/2753        mm_mint_mp4_Snd_MP4_Decode(signed char*, unsigned int) [33]
+[23]     0.0    0.00    0.00    2753         mm_mint_mp4_Snd_Float_to_PCM16(short*, float*, int) [23]
+-----------------------------------------------
+                0.00    0.00    2753/2753        mm_mint_mp4_Snd_MP4_Decode(signed char*, unsigned int) [33]
+[24]     0.0    0.00    0.00    2753         mm_mint_mp4_Snd_PCM16_to_Float(float*, short*, int) [24]
+-----------------------------------------------
+                0.00    0.00       2/2211        open_window(int, int, char const*) [45]
+                0.00    0.00    2209/2211        mm_mint_mp4_Vid_MP4_Decode() [5]
+[25]     0.0    0.00    0.00    2211         set_clip(short, short, short, short, short) [25]
+-----------------------------------------------
+                0.00    0.00    1452/1452        exec_eventloop(void*) [51]
+[26]     0.0    0.00    0.00    1452         multi(void*) [26]
+-----------------------------------------------
+                0.00    0.00    1141/1141        mm_mint_mp4_Vid_MP4_Decode() [5]
+[27]     0.0    0.00    0.00    1141         hide_mouse() [27]
+-----------------------------------------------
+                0.00    0.00    1141/1141        mm_mint_mp4_Vid_MP4_Decode() [5]
+[28]     0.0    0.00    0.00    1141         show_mouse() [28]
+-----------------------------------------------
+                0.00    0.00     219/219         WelsCalcPsnr(void const*, int, void const*, int, int, int) [903]
+[29]     0.0    0.00    0.00     219         mm_mint_H264_Log_Callback(void*, int, char const*) [29]
+-----------------------------------------------
+                0.00    0.00       1/176         mm_mint_mp4_Snd_MP4_Decode(signed char*, unsigned int) [33]
+                0.00    0.00       2/176         mm_mint_mp4_Vid_MP4_Decode() [5]
+                0.00    0.00       3/176         mm_mint_mp4_Open() [56]
+                0.00    0.00     170/176         mm_ico_Decompress(char const*, memory_form*) [35]
+[30]     0.0    0.00    0.00     176         st_mem_alloc(int) [30]
+-----------------------------------------------
+                0.00    0.00       1/169         mm_mint_mp4_Close() [57]
+                0.00    0.00       1/169         mm_mint_mp4_Snd_Close() [61]
+                0.00    0.00       2/169         mm_mint_mp4_Vid_Close() [63]
+                0.00    0.00     165/169         mm_ico_Decompress(char const*, memory_form*) [35]
+[31]     0.0    0.00    0.00     169         st_mem_free(void*) [31]
+-----------------------------------------------
+                0.00    0.00       2/64          mm_mint_mp4_Snd_Set() [18]
+                0.00    0.00      62/64          mm_mint_mp4_Snd_Feed() [10]
+[32]     0.0    0.00    0.00      64         mm_mint_mp4_Snd_LoadBuffer(signed char*, unsigned int) [32]
+                0.00    0.00      64/64          mm_mint_mp4_Snd_MP4_Decode(signed char*, unsigned int) [33]
+-----------------------------------------------
+                0.00    0.00      64/64          mm_mint_mp4_Snd_LoadBuffer(signed char*, unsigned int) [32]
+[33]     0.0    0.00    0.00      64         mm_mint_mp4_Snd_MP4_Decode(signed char*, unsigned int) [33]
+                0.00    0.00    2753/2753        mm_mint_mp4_Snd_PCM16_to_Float(float*, short*, int) [24]
+                0.00    0.00    2753/2753        mm_mint_mp4_Snd_Float_to_PCM16(short*, float*, int) [23]
+                0.00    0.00       1/176         st_mem_alloc(int) [30]
+-----------------------------------------------
+                0.00    0.00       2/7           mm_mint_mp4_Snd_Init() [60]
+                0.00    0.00       2/7           mm_mint_mp4_Snd_UnSet() [62]
+                0.00    0.00       3/7           mm_mint_mp4_Snd_Set() [18]
+[34]     0.0    0.00    0.00       7         st_Soundcmd(short, short) [34]
+-----------------------------------------------
+                0.00    0.00       5/5           mm_ico_Init() [44]
+[35]     0.0    0.00    0.00       5         mm_ico_Decompress(char const*, memory_form*) [35]
+                0.00    0.00     170/176         st_mem_alloc(int) [30]
+                0.00    0.00     165/169         st_mem_free(void*) [31]
+-----------------------------------------------
+                0.00    0.00       1/3           mm_mint_mp4_Vid_Close() [63]
+                0.00    0.00       2/3           mm_mint_mp4_Vid_MP4_Decode() [5]
+[36]     0.0    0.00    0.00       3         st_Supexec(int (*)()) [36]
+-----------------------------------------------
+                0.00    0.00       1/2           mm_mint_mp4_Snd_Set() [18]
+                0.00    0.00       1/2           mm_mint_mp4_Snd_UnSet() [62]
+[37]     0.0    0.00    0.00       2         st_Buffoper(short) [37]
+-----------------------------------------------
+                0.00    0.00       1/2           mm_mint_mp4_Snd_UnSet() [62]
+                0.00    0.00       1/2           mm_mint_mp4_Snd_Close() [61]
+[38]     0.0    0.00    0.00       2         mm_mint_mp4_Snd_mem_free(void*) [38]
+-----------------------------------------------
+                0.00    0.00       1/1           main [19]
+[39]     0.0    0.00    0.00       1         open_vwork() [39]
+-----------------------------------------------
+                0.00    0.00       1/1           mm_mint_mp4_Snd_UnSet() [62]
+[40]     0.0    0.00    0.00       1         st_Jdisint(short) [40]
+-----------------------------------------------
+                0.00    0.00       1/1           mm_mint_mp4_Snd_Init() [60]
+[41]     0.0    0.00    0.00       1         st_Locksnd() [41]
+-----------------------------------------------
+                0.00    0.00       1/1           mm_mint_mp4_Snd_Set() [18]
+[42]     0.0    0.00    0.00       1         st_Setmode(short) [42]
+-----------------------------------------------
+                0.00    0.00       1/1           mm_mint_mp4_Snd_Set() [18]
+[43]     0.0    0.00    0.00       1         st_Xbtimer(short, short, short, void (*)()) [43]
+-----------------------------------------------
+                0.00    0.00       1/1           main [19]
+[44]     0.0    0.00    0.00       1         mm_ico_Init() [44]
+                0.00    0.00       5/5           mm_ico_Decompress(char const*, memory_form*) [35]
+-----------------------------------------------
+                0.00    0.00       1/1           mm_mint_mp4_Open() [56]
+[45]     0.0    0.00    0.00       1         open_window(int, int, char const*) [45]
+                0.00    0.00       2/2211        set_clip(short, short, short, short, short) [25]
+-----------------------------------------------
+                0.00    0.00       1/1           mm_mint_mp4_Snd_Set() [18]
+[46]     0.0    0.00    0.00       1         st_Jenabint(short) [46]
+-----------------------------------------------
+                0.00    0.00       1/1           mm_mint_mp4_Snd_Set() [18]
+[47]     0.0    0.00    0.00       1         st_Sndstatus(short) [47]
+-----------------------------------------------
+                0.00    0.00       1/1           mm_mint_mp4_Snd_UnSet() [62]
+[48]     0.0    0.00    0.00       1         st_Unlocksnd() [48]
+-----------------------------------------------
+                0.00    0.00       1/1           mm_mint_mp4_Snd_Set() [18]
+[49]     0.0    0.00    0.00       1         st_Devconnect(short, short, short, short, short) [49]
+-----------------------------------------------
+                0.00    0.00       1/1           check_ext(char const*, char const*) [67]
+[50]     0.0    0.00    0.00       1         stringtolower(char*) [50]
+-----------------------------------------------
+                0.00    0.00       1/1           pth_exit [1]
+[51]     0.0    0.00    0.00       1         exec_eventloop(void*) [51]
+                0.00    0.00    1452/1452        multi(void*) [26]
+-----------------------------------------------
+                0.00    0.00       1/1           mm_mint_mp4_Open() [56]
+[52]     0.0    0.00    0.00       1         mm_ico_Update_x(unsigned short, short, short) [52]
+-----------------------------------------------
+                0.00    0.00       1/1           mm_mint_mp4_Snd_Set() [18]
+[53]     0.0    0.00    0.00       1         st_Setinterrupt(short, short) [53]
+-----------------------------------------------
+                0.00    0.00       1/1           main [19]
+[54]     0.0    0.00    0.00       1         get_filename_ext(char const*) [54]
+-----------------------------------------------
+                0.00    0.00       1/1           mm_mint_mp4_Snd_Init() [60]
+[55]     0.0    0.00    0.00       1         mm_mint_mp4_Init() [55]
+-----------------------------------------------
+                0.00    0.00       1/1           mm_mint_mp4_Snd_Init() [60]
+[56]     0.0    0.00    0.00       1         mm_mint_mp4_Open() [56]
+                0.00    0.00       3/176         st_mem_alloc(int) [30]
+                0.00    0.00       1/1           mm_mint_mp4_Get_First_VideoTrack(void**) [66]
+                0.00    0.00       1/1           mm_mint_mp4_Get_First_AudioTrack(void**) [65]
+                0.00    0.00       1/1           open_window(int, int, char const*) [45]
+                0.00    0.00       1/1           mm_ico_Update_x(unsigned short, short, short) [52]
+                0.00    0.00       1/1           st_Send_WM_REDRAW() [58]
+-----------------------------------------------
+                0.00    0.00       1/1           main [19]
+[57]     0.0    0.00    0.00       1         mm_mint_mp4_Close() [57]
+                0.00    0.00       1/169         st_mem_free(void*) [31]
+-----------------------------------------------
+                0.00    0.00       1/1           mm_mint_mp4_Open() [56]
+[58]     0.0    0.00    0.00       1         st_Send_WM_REDRAW() [58]
+-----------------------------------------------
+                0.00    0.00       1/1           mm_mint_mp4_Snd_Set() [18]
+[59]     0.0    0.00    0.00       1         st_enableTimerASei() [59]
+-----------------------------------------------
+                0.00    0.00       1/1           main [19]
+[60]     0.0    0.00    0.00       1         mm_mint_mp4_Snd_Init() [60]
+                0.00    0.00       2/7           st_Soundcmd(short, short) [34]
+                0.00    0.00       1/1           mm_mint_mp4_Init() [55]
+                0.00    0.00       1/1           st_Locksnd() [41]
+                0.00    0.00       1/1           mm_mint_mp4_Open() [56]
+-----------------------------------------------
+                0.00    0.00       1/1           mm_mint_mp4_Snd_UnSet() [62]
+[61]     0.0    0.00    0.00       1         mm_mint_mp4_Snd_Close() [61]
+                0.00    0.00       1/169         st_mem_free(void*) [31]
+                0.00    0.00       1/2           mm_mint_mp4_Snd_mem_free(void*) [38]
+-----------------------------------------------
+                0.00    0.00       1/1           main [19]
+[62]     0.0    0.00    0.00       1         mm_mint_mp4_Snd_UnSet() [62]
+                0.00    0.00       2/7           st_Soundcmd(short, short) [34]
+                0.00    0.00       1/2           st_Buffoper(short) [37]
+                0.00    0.00       1/1           st_Jdisint(short) [40]
+                0.00    0.00       1/1           mm_mint_mp4_Snd_Close() [61]
+                0.00    0.00       1/2           mm_mint_mp4_Snd_mem_free(void*) [38]
+                0.00    0.00       1/1           st_Unlocksnd() [48]
+-----------------------------------------------
+                0.00    0.00       1/1           main [19]
+[63]     0.0    0.00    0.00       1         mm_mint_mp4_Vid_Close() [63]
+                0.00    0.00       2/169         st_mem_free(void*) [31]
+                0.00    0.00       1/3           st_Supexec(int (*)()) [36]
+-----------------------------------------------
+                0.00    0.00       1/1           mm_mint_mp4_Snd_Set() [18]
+[64]     0.0    0.00    0.00       1         mm_mint_mp4_Snd_mem_alloc(int) [64]
+-----------------------------------------------
+                0.00    0.00       1/1           mm_mint_mp4_Open() [56]
+[65]     0.0    0.00    0.00       1         mm_mint_mp4_Get_First_AudioTrack(void**) [65]
+-----------------------------------------------
+                0.00    0.00       1/1           mm_mint_mp4_Open() [56]
+[66]     0.0    0.00    0.00       1         mm_mint_mp4_Get_First_VideoTrack(void**) [66]
+-----------------------------------------------
+                0.00    0.00       1/1           main [19]
+[67]     0.0    0.00    0.00       1         check_ext(char const*, char const*) [67]
+                0.00    0.00       1/1           stringtolower(char*) [50]
+-----------------------------------------------
+                0.00    0.00       1/1           main [19]
+[68]     0.0    0.00    0.00       1         appl_init [68]
+-----------------------------------------------
+
+ This table describes the call tree of the program, and was sorted by
+ the total amount of time spent in each function and its children.
+
+ Each entry in this table consists of several lines.  The line with the
+ index number at the left hand margin lists the current function.
+ The lines above it list the functions that called this function,
+ and the lines below it list the functions this one called.
+ This line lists:
+     index	A unique number given to each element of the table.
+		Index numbers are sorted numerically.
+		The index number is printed next to every function name so
+		it is easier to look up where the function is in the table.
+
+     % time	This is the percentage of the `total' time that was spent
+		in this function and its children.  Note that due to
+		different viewpoints, functions excluded by options, etc,
+		these numbers will NOT add up to 100%.
+
+     self	This is the total amount of time spent in this function.
+
+     children	This is the total amount of time propagated into this
+		function by its children.
+
+     called	This is the number of times the function was called.
+		If the function called itself recursively, the number
+		only includes non-recursive calls, and is followed by
+		a `+' and the number of recursive calls.
+
+     name	The name of the current function.  The index number is
+		printed after it.  If the function is a member of a
+		cycle, the cycle number is printed between the
+		function's name and the index number.
+
+
+ For the function's parents, the fields have the following meanings:
+
+     self	This is the amount of time that was propagated directly
+		from the function into this parent.
+
+     children	This is the amount of time that was propagated from
+		the function's children into this parent.
+
+     called	This is the number of times this parent called the
+		function `/' the total number of times the function
+		was called.  Recursive calls to the function are not
+		included in the number after the `/'.
+
+     name	This is the name of the parent.  The parent's index
+		number is printed after it.  If the parent is a
+		member of a cycle, the cycle number is printed between
+		the name and the index number.
+
+ If the parents of the function cannot be determined, the word
+ `<spontaneous>' is printed in the `name' field, and all the other
+ fields are blank.
+
+ For the function's children, the fields have the following meanings:
+
+     self	This is the amount of time that was propagated directly
+		from the child into the function.
+
+     children	This is the amount of time that was propagated from the
+		child's children to the function.
+
+     called	This is the number of times the function called
+		this child `/' the total number of times the child
+		was called.  Recursive calls by the child are not
+		listed in the number after the `/'.
+
+     name	This is the name of the child.  The child's index
+		number is printed after it.  If the child is a
+		member of a cycle, the cycle number is printed
+		between the name and the index number.
+
+ If there are any cycles (circles) in the call graph, there is an
+ entry for the cycle-as-a-whole.  This entry shows who called the
+ cycle (as parents) and the members of the cycle (as children.)
+ The `+' recursive calls entry shows the number of function calls that
+ were internal to the cycle, and the calls entry for each member shows,
+ for that member, how many times it was called from other members of
+ the cycle.
+
+Copyright (C) 2012-2023 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
+
+Index by function name
+
+  [27] hide_mouse()           [52] mm_ico_Update_x(unsigned short, short, short) [5] mm_mint_mp4_Vid_MP4_Decode()
+  [39] open_vwork()           [53] st_Setinterrupt(short, short) [23] mm_mint_mp4_Snd_Float_to_PCM16(short*, float*, int)
+  [28] show_mouse()           [54] get_filename_ext(char const*) [24] mm_mint_mp4_Snd_PCM16_to_Float(float*, short*, int)
+   [2] st_Buffptr(int*)       [55] mm_mint_mp4_Init()     [65] mm_mint_mp4_Get_First_AudioTrack(void**)
+  [40] st_Jdisint(short)      [56] mm_mint_mp4_Open()     [66] mm_mint_mp4_Get_First_VideoTrack(void**)
+  [41] st_Locksnd()           [35] mm_ico_Decompress(char const*, memory_form*) [3] mm_mint_mp4_Snd_Get_Playback_Position()
+  [42] st_Setmode(short)      [57] mm_mint_mp4_Close()    [26] multi(void*)
+  [36] st_Supexec(int (*)())  [58] st_Send_WM_REDRAW()    [25] set_clip(short, short, short, short, short)
+  [43] st_Xbtimer(short, short, short, void (*)()) [59] st_enableTimerASei() [67] check_ext(char const*, char const*)
+  [44] mm_ico_Init()          [18] mm_mint_mp4_Snd_Set()  [68] appl_init
+  [45] open_window(int, int, char const*) [10] mm_mint_mp4_Snd_Feed() [12] free
+  [37] st_Buffoper(short)     [60] mm_mint_mp4_Snd_Init()  [8] gettimeofday
+  [46] st_Jenabint(short)     [11] mm_mint_mp4_Snd_Play(void*) [6] lseek
+  [34] st_Soundcmd(short, short) [4] mm_mint_mp4_Vid_Play(void*) [19] main
+  [31] st_mem_free(void*)     [61] mm_mint_mp4_Snd_Close() [7] mt_evnt_multi
+   [9] st_Setbuffer(short, void*, void*) [62] mm_mint_mp4_Snd_UnSet() [13] mt_wind_set
+  [47] st_Sndstatus(short)    [63] mm_mint_mp4_Vid_Close() [14] poll
+  [48] st_Unlocksnd()         [38] mm_mint_mp4_Snd_mem_free(void*) [15] read
+  [30] st_mem_alloc(int)      [29] mm_mint_H264_Log_Callback(void*, int, char const*) [16] siglongjmp
+  [49] st_Devconnect(short, short, short, short, short) [64] mm_mint_mp4_Snd_mem_alloc(int) [17] sigsetjmp
+  [50] stringtolower(char*)   [32] mm_mint_mp4_Snd_LoadBuffer(signed char*, unsigned int)
+  [51] exec_eventloop(void*)  [33] mm_mint_mp4_Snd_MP4_Decode(signed char*, unsigned int)
