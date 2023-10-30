@@ -44,3 +44,5 @@ void st_Jdisint( int16_t timer );
 void st_enableTimerASei( void );
 void st_Locksnd();
 void st_Unlocksnd();
+
+void st_Get_Current_Dir(char* dst_char);

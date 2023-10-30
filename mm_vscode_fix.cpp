@@ -159,3 +159,16 @@ void st_Vsync( int16_t nb_vsync ){
 		Vsync(); // 20ms
 	}
 }
+
+void st_Get_Current_Dir(char* dst_char){
+    if(strlen(dst_char) < 1){
+        int16_t this_current_drive;
+        char this_current_path[256] = {'\0'};
+
+        this_current_drive = Dgetdrv();
+        Dgetpath(this_current_path,0);
+        dst_char[0] = this_current_drive + 65;
+        dst_char[1] = ':';
+        strcat(dst_char,this_current_path);
+    }
+}

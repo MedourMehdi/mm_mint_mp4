@@ -111,6 +111,9 @@ int16_t work_out[57];					/* Output VDI parameters array */
 
 int16_t work_out_extended[57];			/* Output extended VDI parameters array */
 
+char current_path[256] = {'\0'};
+char ico_path[256] = {'\0'};
+
 MFDB mm_wi_mfdb = { 0 };
 MFDB screen_mfdb = { 0 };
 MFDB mm_control_bar_mfdb = { 0 };
@@ -313,9 +316,9 @@ void mm_ico_Handle(int16_t mouse_x, int16_t mouse_y, int16_t mouse_button);
 void mm_ico_Update_x(uint16_t index, int16_t new_pos_x, int16_t new_pos_y);
 
 struct_mm_ico_list control_bar_list[] = {
-	{	1,		"./ico/pause.png",			"./ico/play.png",	&mm_ico_play_mfdb,		&mm_ico_pause_mfdb, mm_mint_mp4_Snd_Pause,		32,		4 ,	false	},
-	{	2,		"./ico/go_start.png",		NULL,				&mm_ico_stop_mfdb,		NULL,				mm_mint_mp4_Snd_Restart, 	70,		4 ,	false	},
-	{	3,		"./ico/volume.png",			"./ico/mute.png",	&mm_ico_sound_mfdb,		&mm_ico_mute_mfdb, 	mm_mint_mp4_Snd_Mute,		106,	4 ,	false	},
+	{	1,		"\\ico\\pause.png",			"\\ico\\play.png",	&mm_ico_play_mfdb,		&mm_ico_pause_mfdb, mm_mint_mp4_Snd_Pause,		32,		4 ,	false	},
+	{	2,		"\\ico\\go_start.png",		NULL,				&mm_ico_stop_mfdb,		NULL,				mm_mint_mp4_Snd_Restart, 	70,		4 ,	false	},
+	{	3,		"\\ico\\volume.png",			"\\ico\\mute.png",	&mm_ico_sound_mfdb,		&mm_ico_mute_mfdb, 	mm_mint_mp4_Snd_Mute,		106,	4 ,	false	},
 	{	-1,		NULL,						NULL, 				NULL, 			 		NULL,				NULL,						0,		0 ,	0		},
 };
 
@@ -335,6 +338,7 @@ bool check_ext(const char *ext1, const char *ext2);
 void stringtolower(char *ext);
 void stringtoupper(char *ext);
 const char *get_filename_ext(const char *filename);
+void remove_quotes(char* s1, char* s2);
 
 /****************************************************************/
 /*  AES UTILITY ROUTINES                                        */
@@ -615,14 +619,25 @@ void mm_ico_Init(){
 		control_bar_list[ i ].main_icon->x = control_bar_list[ i ].pos_x;
 		control_bar_list[ i ].main_icon->y = control_bar_list[ i ].pos_y;
 		control_bar_list[ i ].main_icon->filename = control_bar_list[ i ].main_icon_path;
-		mm_ico_Decompress(control_bar_list[ i ].main_icon_path, &control_bar_list[ i ].main_icon->mm_ico_mfdb);
+
+		int16_t ico_path_len = strlen(ico_path);
+		if( ico_path_len < 1){
+			strcpy(ico_path, current_path);
+		}
+		char this_ico_path[ico_path_len + strlen(control_bar_list[ i ].main_icon_path) + 1] = {'\0'};
+		strcpy(this_ico_path, ico_path);
+		strcat(this_ico_path, control_bar_list[ i ].main_icon_path);
+		printf("this_ico_path %s\n", this_ico_path);
+		mm_ico_Decompress(this_ico_path, &control_bar_list[ i ].main_icon->mm_ico_mfdb);
 		control_bar_list[ i ].main_icon->x2 = control_bar_list[ i ].main_icon->x + control_bar_list[ i ].main_icon->mm_ico_mfdb.fd_w;
 		control_bar_list[ i ].main_icon->y2 = control_bar_list[ i ].main_icon->y + control_bar_list[ i ].main_icon->mm_ico_mfdb.fd_h;
 		if(control_bar_list[ i ].mask_icon_path != NULL){
 			control_bar_list[ i ].mask_icon->filename = control_bar_list[ i ].mask_icon_path;
 			control_bar_list[ i ].mask_icon->x = control_bar_list[ i ].pos_x;
 			control_bar_list[ i ].mask_icon->y = control_bar_list[ i ].pos_y;
-			mm_ico_Decompress(control_bar_list[ i ].mask_icon_path, &control_bar_list[ i ].mask_icon->mm_ico_mfdb);
+			strcpy(this_ico_path, ico_path);
+			strcat(this_ico_path, control_bar_list[ i ].mask_icon_path);			
+			mm_ico_Decompress(this_ico_path, &control_bar_list[ i ].mask_icon->mm_ico_mfdb);
 			control_bar_list[ i ].mask_icon->x2 = control_bar_list[ i ].mask_icon->x + control_bar_list[ i ].mask_icon->mm_ico_mfdb.fd_w;
 			control_bar_list[ i ].mask_icon->y2 = control_bar_list[ i ].mask_icon->y + control_bar_list[ i ].mask_icon->mm_ico_mfdb.fd_h;
 		}
@@ -913,10 +928,21 @@ int main(int argc, char *argv[])
 	pthread_t thread_video, thread_sound, thread_eventloop;
 	int  iret_video, iret_sound, iret_eventloop;
     FILE* p_file;
-    
+
+	st_Get_Current_Dir(current_path);
+	printf("current_path %s\n", current_path);
+	char* this_file = (char*)st_mem_alloc(256);
+	memset(this_file, 0, 128);
+
+
 	if (argc > 1){
-		printf("path %s\n", argv[0]);
-		mm_mint_mp4_snd.filename = argv[1];
+		for(int16_t i = 1; i < argc; i++) {
+				strcat(this_file, argv[i]);
+				if(i < (argc - 1)){strcat(this_file, " ");}
+		}
+		remove_quotes(this_file, this_file);
+		mm_mint_mp4_snd.filename = this_file;
+
 	}
 	else{
 		form_alert(1, "[1][Provide a file as argument][Okay]");
@@ -986,6 +1012,8 @@ int main(int argc, char *argv[])
 
 	/* Reset Text color to Black */
 	vst_color(handle, 1);
+
+	st_mem_free(this_file);
 
 	wind_close(wi_handle);
 	wind_delete(wi_handle);
@@ -2021,4 +2049,24 @@ const char *get_filename_ext(const char *filename){
     const char *dot = strrchr(filename, '.');
     if(!dot || dot == filename) return "";
     return dot + 1;
+}
+
+void remove_quotes(char* s1, char* s2){
+    char *dst = s1;
+    char *src = s2;
+    char c;
+
+    while ((c = *src++) != '\0')
+    {
+        if (c == '\\')
+        {
+            *dst++ = c;
+            if ((c = *src++) == '\0')
+                break;
+            *dst++ = c;
+        }
+        else if (c != '"')
+            *dst++ = c;
+    }
+    *dst = '\0';
 }
