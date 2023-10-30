@@ -160,7 +160,7 @@ static	struct_mm_vid 	mm_mint_mp4_vid;
 
 static	ISVCDecoder		*pVidCodec_Handler = NULL;
 static	SDecodingParam	pVidCodec_Param = { 0 };
-static	SBufferInfo		pDstBufInfo;
+static	SBufferInfo		*pDstBufInfo;
 
 /****************************************************************/
 /*  SOUND		                                        */
@@ -913,6 +913,7 @@ int main(int argc, char *argv[])
     FILE* p_file;
     
 	if (argc > 1){
+		printf("path %s\n", argv[0]);
 		mm_mint_mp4_snd.filename = argv[1];
 	}
 	else{
@@ -1388,7 +1389,8 @@ void mm_mint_mp4_Open(){
 		pVidCodec_Param.eEcActiveIdc = ERROR_CON_SLICE_COPY;
 		pVidCodec_Param.sVideoProperty.eVideoBsType = VIDEO_BITSTREAM_AVC;
 		if(pVidCodec_Handler->Initialize (&pVidCodec_Param)) { printf("initialize failed\n"); }
-		memset(&pDstBufInfo, 0, sizeof(SBufferInfo));
+		pDstBufInfo = 	(SBufferInfo*)st_mem_alloc(sizeof(SBufferInfo));
+		memset(pDstBufInfo, 0, sizeof(SBufferInfo));
 
 		mm_mint_mp4_vid.track_total_frames = MP4GetTrackNumberOfSamples(p_mp4_handle, mm_mint_mp4_vid.track_number);
 		mm_mint_mp4_vid.track_max_frame_size = MP4GetTrackMaxSampleSize(p_mp4_handle, mm_mint_mp4_vid.track_number);
@@ -1635,13 +1637,13 @@ void mm_mint_mp4_Vid_MP4_Decode(){
 		}
 
 		sample_size += video_sample_offset;
-		pVidCodec_Handler->DecodeFrameNoDelay( video_sample, sample_size, pData, &pDstBufInfo );
-		if( pDstBufInfo.iBufferStatus == 1 && skip_frame == false) {		
-			original_width = pDstBufInfo.UsrData.sSystemBuffer.iWidth;
-			original_height = pDstBufInfo.UsrData.sSystemBuffer.iHeight;
+		pVidCodec_Handler->DecodeFrameNoDelay( video_sample, sample_size, pData, pDstBufInfo );
+		if( pDstBufInfo->iBufferStatus == 1 && skip_frame == false) {		
+			original_width = pDstBufInfo->UsrData.sSystemBuffer.iWidth;
+			original_height = pDstBufInfo->UsrData.sSystemBuffer.iHeight;
 			mm_mint_mp4_vid.video_ratio = (float)original_width / original_height;
-			int Y_Stride = pDstBufInfo.UsrData.sSystemBuffer.iStride[0];
-			int UV_Stride = pDstBufInfo.UsrData.sSystemBuffer.iStride[1];
+			int Y_Stride = pDstBufInfo->UsrData.sSystemBuffer.iStride[0];
+			int UV_Stride = pDstBufInfo->UsrData.sSystemBuffer.iStride[1];
 
 			if(mm_mint_mp4_vid.limit_upscale == true){
 				width = MIN(original_width, wwork);
@@ -1921,6 +1923,7 @@ void mm_mint_mp4_Vid_Close(){
 			pVidCodec_Handler->Uninitialize();
 			printf("dbg 4.x\n");
 			WelsDestroyDecoder(pVidCodec_Handler);
+			st_mem_free(pDstBufInfo);
 			printf("dbg 4\n");
 		}
 		st_mem_free(mm_wi_mfdb.fd_addr);
