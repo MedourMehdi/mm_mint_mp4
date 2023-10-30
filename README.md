@@ -4,15 +4,21 @@ mm_mint_mp4 is an MP4 video and audio player.
 
 ## Description
 
-![Product Name Screen Shot][product-screenshot]
+![mm_mint_mp4 24bpp Myaes][product-screenshot2]
 
 <div style="text-align: justify">
 mm_mint_mp4 aims to play h264 MP4 video + AAC audio on Freemint in GEM windows.
+
 It supports 16 bpp and 32 bpp video formats.
+
 The player tries to synchronize video and sound based on FPS.
 It resamples the original sound frequency to satisfy the constraints imposed by the Atari hardware.
+
 The control bar is reconstructed in real time on the video image respecting the alpha channel of the png icons, so you can modify the icons according to your needs by simply replacing the files under the icon directory.
+
 No shared libraries or modules are needed for this to work.
+
+mm_mint_mp4 works under Freemint 1.19 + Xaaes/Myaes
 </div>
 
 ## Getting Started
@@ -27,7 +33,7 @@ No shared libraries or modules are needed for this to work.
 * LibYuv
 * MP4v2
 * Zita-resampler
-* Fdk-aac
+* Fdk-aac / Faad
 * Openh264
 
 You should found them here: https://tho-otto.de/crossmint.php or you can read https://www.atari-forum.com/viewtopic.php?t=42086 if you want to rebuild them.
@@ -72,3 +78,4 @@ Inspiration, code snippets, etc.
 * [FreeMint](https://freemint.github.io/)
 
 [product-screenshot]: screenshot.png
+[product-screenshot2]: screenshot2.png
