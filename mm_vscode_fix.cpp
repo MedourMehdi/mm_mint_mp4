@@ -20,19 +20,24 @@ u_int16_t ARGB_to_RGB565(u_int8_t *ARGBPixel)
 
 
 void* st_mem_alloc(int32_t size){
-	void* mem_ptr = NULL;
-	// mem_ptr = (void*)Mxalloc(size,3);
-	mem_ptr = (void*)malloc(size);
-	return mem_ptr;
+	// void* mem_ptr = NULL;
+	// // mem_ptr = (void*)Mxalloc(size,3);
+	// mem_ptr = (void*)malloc(size);
+	// return mem_ptr;
+	// return (void*)malloc(size);
+	return (void*)Mxalloc(size,3);
 }
 
 void *st_mem_free(void *ptr){
-	if(ptr != NULL){
-		// Mfree(ptr);
-		free(ptr);
-		ptr = NULL;
-	}
-	return ptr;
+	// if(ptr != NULL){
+	// 	// Mfree(ptr);
+	// 	free(ptr);
+	// 	ptr = NULL;
+	// }
+	// return ptr;
+	// free(ptr);
+	Mfree(ptr);
+	return NULL;
 }
 
 void *st_mem_calloc(int32_t size){

@@ -504,6 +504,9 @@ void *multi( void *p_param )
 			switch (msgbuff[0])
 			{
 			case WM_CLOSED:
+				mm_mint_mp4_Snd_Pause();
+				pthread_yield_np();
+				pthread_yield_np();
 				app_end = true;
 				break;
 			case WM_REDRAW:
@@ -1000,12 +1003,12 @@ int main(int argc, char *argv[])
 
 	if(mm_mint_mp4_vid.track_number > 0) {
 		pthread_join( thread_video, NULL);
-		mm_mint_mp4_Vid_Close();
+		// mm_mint_mp4_Vid_Close();
 	}
 
 	if(mm_mint_mp4_snd.track_number > 0) {
 		pthread_join( thread_sound, NULL);
-		mm_mint_mp4_Snd_UnSet();
+		// mm_mint_mp4_Snd_UnSet();
 	}
 
 	mm_mint_mp4_Close();
@@ -1393,7 +1396,8 @@ void mm_mint_mp4_Open(){
 
 		if(mm_mint_mp4_snd.real_time_resampling == true) {
 			mm_mint_mp4_snd.resampling_ratio = (double)mm_mint_mp4_snd.new_samplerate / mm_mint_mp4_snd.ori_samplerate;
-			VR = (VResampler *)st_mem_alloc(sizeof(VResampler));
+			// VR = (VResampler *)st_mem_alloc(sizeof(VResampler));
+			VR = new VResampler();
 			if (VR->setup(mm_mint_mp4_snd.resampling_ratio, (unsigned int)this_channels, (unsigned int)FILTSIZE)) {
 				fprintf (stderr, "Sample rate ratio %d/%d is not supported.\n", mm_mint_mp4_snd.new_samplerate, mm_mint_mp4_snd.ori_samplerate);
 			} else {
@@ -1424,7 +1428,8 @@ void mm_mint_mp4_Open(){
 		pVidCodec_Param.eEcActiveIdc = ERROR_CON_SLICE_COPY;
 		pVidCodec_Param.sVideoProperty.eVideoBsType = VIDEO_BITSTREAM_AVC;
 		if(pVidCodec_Handler->Initialize (&pVidCodec_Param)) { printf("initialize failed\n"); }
-		pDstBufInfo = 	(SBufferInfo*)st_mem_alloc(sizeof(SBufferInfo));
+		// pDstBufInfo = 	(SBufferInfo*)st_mem_alloc(sizeof(SBufferInfo));
+		pDstBufInfo = new SBufferInfo;
 		memset(pDstBufInfo, 0, sizeof(SBufferInfo));
 
 		mm_mint_mp4_vid.track_total_frames = MP4GetTrackNumberOfSamples(p_mp4_handle, mm_mint_mp4_vid.track_number);
@@ -1923,6 +1928,8 @@ void mm_mint_mp4_Vid_MP4_Decode(){
 }
 
 void mm_mint_mp4_Close(){
+	mm_mint_mp4_Snd_UnSet();	
+	mm_mint_mp4_Vid_Close();
 	MP4FileHandle*      p_mp4_handle = (MP4FileHandle*)mm_mint_mp4_snd.pMP4_Handler;
 	if(p_mp4_handle != NULL){
 		MP4Close(p_mp4_handle);
@@ -1939,7 +1946,7 @@ void mm_mint_mp4_Snd_Close(){
 		mm_mint_mp4_snd.bytes_counter = 0;
 		if(mm_mint_mp4_snd.real_time_resampling == true){
 			VR->clear();
-			st_mem_free(VR);
+			delete VR;
 		}
 
 		mm_mint_mp4_Snd_mem_free(mm_mint_mp4_snd.pBuffer);
@@ -1960,7 +1967,7 @@ void mm_mint_mp4_Vid_Close(){
 
 			pVidCodec_Handler->Uninitialize();
 			WelsDestroyDecoder(pVidCodec_Handler);
-			st_mem_free(pDstBufInfo);
+			delete pDstBufInfo;
 
 		}
 		st_mem_free(mm_wi_mfdb.fd_addr);
